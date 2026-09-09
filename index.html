@@ -32,6 +32,7 @@
 :root,:root[data-theme="dark"],:root[data-theme="light"]{color-scheme:light}
 
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 body{
   margin:0;
   background:var(--ground);
@@ -213,6 +214,43 @@ td.ord{font-variant-numeric:tabular-nums;font-weight:500}
 .confirm button{border:1px solid currentColor;background:transparent;color:inherit;border-radius:5px;padding:1px 7px;font-size:11px;cursor:pointer}
 .confirm button.no{color:var(--ink-soft)}
 
+.step{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:17px;height:17px;border-radius:50%;background:var(--ink);color:var(--paper);
+  font-size:10px;font-weight:600;letter-spacing:0;flex:none;
+}
+/* a field the staff member still has to fill */
+input.bad,textarea.bad{border-color:var(--coral);box-shadow:0 0 0 3px var(--coral-wash)}
+.chips.bad{outline:2px solid var(--coral);outline-offset:4px;border-radius:8px}
+
+/* what just happened, in plain sight — a toast is too easy to miss at a busy booth */
+.done{
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  margin:0;padding:12px 16px;background:var(--coral-wash);
+  border-bottom:1px solid var(--line);
+}
+.done b{font-size:15px;font-weight:600;color:var(--coral)}
+.done span{font-size:12.5px;color:var(--ink-soft)}
+.done .spacer{flex:1}
+.done button{
+  border:1px solid var(--coral);background:transparent;color:var(--coral);
+  border-radius:8px;padding:7px 13px;font-size:12.5px;font-weight:500;cursor:pointer;
+}
+.done button:hover{background:var(--coral);color:var(--coral-ink)}
+.helpbtn{
+  border:1px solid var(--line);background:var(--field);color:var(--ink-soft);
+  width:28px;height:28px;border-radius:50%;font-size:14px;font-weight:600;cursor:pointer;flex:none;
+}
+.helpbtn:hover{border-color:var(--ink-faint);color:var(--ink)}
+.steps{counter-reset:s;display:grid;gap:11px;margin:0;padding:0;list-style:none}
+.steps li{display:grid;grid-template-columns:24px 1fr;gap:11px;align-items:start;font-size:13px;line-height:1.5}
+.steps li::before{
+  counter-increment:s;content:counter(s);
+  display:flex;align-items:center;justify-content:center;
+  width:24px;height:24px;border-radius:50%;background:var(--ink);color:var(--paper);
+  font-size:11px;font-weight:600;
+}
+.steps b{font-weight:600}
 .tabs{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
 .tabs button{border:0;background:transparent;color:var(--ink-soft);padding:5px 13px;font-size:12px;font-weight:500;cursor:pointer}
 .tabs button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
@@ -366,24 +404,32 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
         <h2>บันทึกออเดอร์ <span class="th">/ New order</span></h2>
         <span class="ordno" id="ordNo">—</span>
         <div style="flex:1"></div>
+        <button type="button" class="helpbtn" id="openHelp" title="วิธีใช้">?</button>
         <button type="button" class="btn btn-sm" id="openLists">ตั้งค่า · Admin</button>
       </div>
 
-      <form class="entry" id="form" autocomplete="off">
+      <div class="done" id="doneStrip" hidden>
+        <b id="doneNo">#000</b>
+        <span id="doneAmt"></span>
+        <div class="spacer"></div>
+        <button type="button" id="undoBtn">ยกเลิกออเดอร์นี้ · Undo</button>
+      </div>
+
+      <form class="entry" id="form" autocomplete="off" novalidate>
 
         <div class="band">
-          <p class="band-label">งาน · Event</p>
+          <p class="band-label"><span class="step">1</span>งาน · Event</p>
           <div class="grid">
             <div class="field">
-              <label for="f-event"><b>Event</b> · งาน / จุดขาย <span class="req">*</span></label>
+              <label for="f-event"><b>งาน / จุดขาย</b> · Event <span class="req">*</span></label>
               <input type="text" id="f-event" list="l-events" placeholder="เช่น Central Ladprao Pop-up" required>
               <datalist id="l-events"></datalist>
             </div>
             <div class="grid g3">
-              <div class="field"><label for="f-date"><b>Date</b> · วันที่ <span class="fmt">(วว/ดด/ปปปป)</span></label><input type="date" id="f-date" required></div>
-              <div class="field"><label for="f-time"><b>Time</b> · เวลา</label><input type="time" id="f-time" required></div>
+              <div class="field"><label for="f-date"><b>วันที่</b> · Date <span class="fmt">(วว/ดด/ปปปป)</span></label><input type="date" id="f-date" required></div>
+              <div class="field"><label for="f-time"><b>เวลา</b> · Time</label><input type="time" id="f-time" required></div>
               <div class="field">
-                <label for="f-pic"><b>PIC</b> · ผู้ขาย</label>
+                <label for="f-pic"><b>ผู้ขาย</b> · PIC</label>
                 <input type="text" id="f-pic" list="l-pics" placeholder="ชื่อ">
                 <datalist id="l-pics"></datalist>
               </div>
@@ -392,11 +438,11 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
         </div>
 
         <div class="band">
-          <p class="band-label">สินค้า · Items</p>
+          <p class="band-label"><span class="step">2</span>สินค้า · Items</p>
           <div class="grid">
             <div class="grid g-qty">
               <div class="field">
-                <label for="f-qty"><b>Qty</b> · จำนวน</label>
+                <label for="f-qty"><b>จำนวน</b> · Qty</label>
                 <div class="stepper">
                   <button type="button" id="qtyMinus" aria-label="ลดจำนวน">−</button>
                   <input type="number" id="f-qty" min="1" step="1" value="1" inputmode="numeric">
@@ -404,24 +450,24 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
                 </div>
               </div>
               <div class="field">
-                <label for="f-model"><b>Model / SKU</b> · รุ่น หรือ รหัสสินค้า <span class="req">*</span></label>
+                <label for="f-model"><b>รุ่น / รหัสสินค้า</b> · Model / SKU <span class="req">*</span></label>
                 <input type="text" id="f-model" list="l-models" placeholder="ชื่อรุ่น หรือ SKU ID" required>
                 <datalist id="l-models"></datalist>
               </div>
             </div>
             <div class="grid g-line">
               <div class="field">
-                <label for="f-color"><b>Color</b> · สี <span class="req">*</span></label>
+                <label for="f-color"><b>สี</b> · Color <span class="req">*</span></label>
                 <input type="text" id="f-color" list="l-colors" placeholder="พิมพ์หรือเลือกสี" required>
                 <datalist id="l-colors"></datalist>
               </div>
               <div class="field">
-                <label for="f-price"><b>Price</b> · ราคา/ชิ้น ฿ <span class="req">*</span></label>
+                <label for="f-price"><b>ราคา/ชิ้น</b> · Price ฿ <span class="req">*</span></label>
                 <input type="number" id="f-price" min="0" step="1" inputmode="decimal" placeholder="ต่อชิ้น" required>
               </div>
             </div>
             <div class="field">
-              <label id="lbl-size"><b>Size</b> · ไซซ์ <span class="req">*</span></label>
+              <label id="lbl-size"><b>ไซซ์</b> · Size <span class="req">*</span></label>
               <div class="chips" id="c-size" role="group" aria-labelledby="lbl-size"></div>
             </div>
             <div class="addrow">
@@ -440,10 +486,10 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
         </div>
 
         <div class="band">
-          <p class="band-label">การชำระเงิน · Payment</p>
+          <p class="band-label"><span class="step">3</span>เงิน · Payment</p>
           <div class="grid">
             <div class="field">
-              <label for="f-disc"><b>Discount</b> · ส่วนลด (ทั้งออเดอร์)</label>
+              <label for="f-disc"><b>ส่วนลด</b> · Discount (ทั้งออเดอร์)</label>
               <div class="disc">
                 <input type="number" id="f-disc" min="0" step="1" inputmode="decimal" placeholder="0">
                 <div class="seg" role="group" aria-label="หน่วยส่วนลด">
@@ -454,37 +500,37 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
               <p class="promoline" id="promoLine"></p>
             </div>
             <div class="field">
-              <label id="lbl-pay"><b>Total Payment</b> · ยอดชำระ</label>
+              <label id="lbl-pay"><b>ยอดชำระ</b> · Total Payment</label>
               <div class="calcbox" id="calcBox" role="group" aria-labelledby="lbl-pay"></div>
             </div>
             <div class="field">
-              <label for="f-note"><b>Note</b> · หมายเหตุ <span class="fmt">(เพิ่มเติม หากมี)</span></label>
+              <label for="f-note"><b>หมายเหตุ</b> · Note <span class="fmt">(เพิ่มเติม หากมี)</span></label>
               <textarea id="f-note" rows="2" placeholder="เช่น ของแถม, เปลี่ยนไซซ์, ลูกค้าประจำ, ช่องทางชำระเงิน"></textarea>
             </div>
           </div>
         </div>
 
         <div class="band">
-          <p class="band-label">ลูกค้า · Customer</p>
+          <p class="band-label"><span class="step">4</span>ลูกค้า · Customer</p>
           <div class="grid">
             <div class="grid g2">
               <div class="field">
-                <label id="lbl-thai"><b>is_Thai</b> · คนไทย?</label>
+                <label id="lbl-thai"><b>คนไทย?</b> · is_Thai</label>
                 <div class="chips" id="c-thai" role="group" aria-labelledby="lbl-thai"></div>
               </div>
               <div class="field">
-                <label for="f-nat"><b>National</b> · สัญชาติ</label>
+                <label for="f-nat"><b>สัญชาติ</b> · National</label>
                 <input type="text" id="f-nat" list="l-nats" placeholder="สัญชาติ">
                 <datalist id="l-nats"></datalist>
                 <input type="text" id="f-nat-other" placeholder="ระบุสัญชาติ · specify" hidden>
               </div>
             </div>
             <div class="field">
-              <label id="lbl-gender"><b>Gender</b> · เพศ</label>
+              <label id="lbl-gender"><b>เพศ</b> · Gender</label>
               <div class="chips" id="c-gender" role="group" aria-labelledby="lbl-gender"></div>
             </div>
             <div class="field">
-              <label id="lbl-age"><b>Age</b> · ช่วงอายุ</label>
+              <label id="lbl-age"><b>ช่วงอายุ</b> · Age</label>
               <div class="chips" id="c-age" role="group" aria-labelledby="lbl-age"></div>
             </div>
           </div>
@@ -557,6 +603,22 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
     </section>
   </div>
 </div>
+
+<dialog class="sheet" id="helpSheet">
+  <div class="sheet-hd"><h3>วิธีใช้ · How to record a sale</h3><div class="spacer"></div><button type="button" class="btn btn-sm" id="closeHelp">ปิด</button></div>
+  <div class="sheet-bd">
+    <ol class="steps">
+      <li><span><b>งาน · เวลา · ผู้ขาย</b><br>กรอกไว้ให้แล้ว ไม่ต้องแก้ (เปลี่ยนได้ถ้าคนขายเปลี่ยน)</span></li>
+      <li><span><b>เลือกรุ่น / SKU</b><br>พิมพ์ชื่อรุ่นหรือรหัสก็ได้ · <b>ราคาจะขึ้นเอง</b> (ช่องเป็นสีฟ้า = ราคาจากระบบ) แล้วใส่สี ไซซ์ จำนวน</span></li>
+      <li><span><b>ลูกค้าซื้อหลายชิ้น?</b><br>กด <b>+ เพิ่มสินค้าอีกชิ้น</b> แล้วกรอกชิ้นถัดไป ทำซ้ำได้เรื่อยๆ</span></li>
+      <li><span><b>ส่วนลดคิดให้อัตโนมัติ</b><br>2 ชิ้น ลด 5% · 3 ชิ้นขึ้นไป ลด 10% · พิมพ์ทับได้ถ้าต้องการ</span></li>
+      <li><span><b>ดูยอดชำระ</b><br>กล่องสีส้มบอกวิธีคิด (ราคา × จำนวน − ส่วนลด) — บอกลูกค้าได้เลย</span></li>
+      <li><span><b>กรอกข้อมูลลูกค้า</b><br>คนไทย/ต่างชาติ · สัญชาติ (ถ้าไม่มีในลิสต์ เลือก <b>Other</b> แล้วพิมพ์เอง) · เพศ · ช่วงอายุ</span></li>
+      <li><span><b>กด บันทึกออเดอร์</b><br>จะขึ้นแถบสีส้มบอกเลขออเดอร์และยอด · กดผิดกด <b>ยกเลิกออเดอร์นี้</b> ได้ทันที</span></li>
+    </ol>
+    <p class="note">ไม่มีสัญญาณ? บันทึกได้ตามปกติ ระบบเก็บไว้ในเครื่องและส่งให้เองเมื่อเน็ตกลับมา — จะขึ้นป้ายสีส้ม "รอส่ง" ที่ด้านบน อย่าเพิ่งปิดเบราว์เซอร์หรือล้างข้อมูล</p>
+  </div>
+</dialog>
 
 <dialog class="sheet" id="pinSheet">
   <div class="sheet-hd"><h3>ตั้งค่า · Admin</h3><div class="spacer"></div><button type="button" class="btn btn-sm" id="closePin">ปิด</button></div>
@@ -640,7 +702,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
 
   /* Paste your deployed web-app URL here to hard-wire it for every device.
      Leave it empty and each device is asked once, then remembers. */
-  var API_URL = "";
+  var API_URL = "https://script.google.com/macros/s/AKfycbzuaHT_kGtsmUJLnN_TMLyiBKcINXjpVfImA5SUydHoxVGNfLsDE04aGzcdtLPm4USLiw/exec";
 
   var LS_API   = "appeal.api";
   var LS_QUEUE = "appeal.queue";
@@ -776,7 +838,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
         sel[key] = (sel[key]===v)?"":v;
         renderChips(el,items,key,accent);
         if(key==="thai") onThaiChange();
-        if(key==="size") refreshTotals();
+        if(key==="size"){ $("c-size").classList.remove("bad"); refreshTotals(); }
       });
       el.appendChild(b);
     });
@@ -872,9 +934,20 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
     priceTouched=false; $("f-price").classList.remove("auto");
     sel.size=""; renderChips($("c-size"),lists.sizes,"size",true);
   }
+  function flagGap(gap){
+    clearFlags();
+    if(gap.el){ gap.el.classList.add("bad"); gap.el.focus(); }
+    else $("c-size").classList.add("bad");
+    toast(gap.msg);
+  }
+  function clearFlags(){
+    ["f-model","f-color","f-price","f-event"].forEach(function(id){ $(id).classList.remove("bad"); });
+    $("c-size").classList.remove("bad");
+  }
   function addToCart(){
     var gap=missingOnLine();
-    if(gap){ toast(gap.msg); if(gap.el) gap.el.focus(); return; }
+    if(gap){ flagGap(gap); return; }
+    clearFlags();
     cart.push(currentLine()); clearLineFields(); renderBasket(); refreshTotals(); $("f-model").focus();
   }
   function renderBasket(){
@@ -1134,10 +1207,9 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
     if(e) e.preventDefault();
     if(!apiUrl()){ openSetup(); return; }
     var event_=$("f-event").value.trim();
-    if(!event_){ $("f-event").focus(); toast("ใส่ชื่องานก่อน · Event required"); return; }
-    if(linePartlyFilled() && !currentLine()){
-      var gap=missingOnLine(); toast(gap.msg); if(gap.el) gap.el.focus(); return;
-    }
+    if(!event_){ flagGap({el:$("f-event"), msg:"ใส่ชื่องานก่อน · Event required"}); return; }
+    if(linePartlyFilled() && !currentLine()){ flagGap(missingOnLine()); return; }
+    clearFlags();
     var t=compute();
     if(!t.lines.length){ $("f-model").focus(); toast("ใส่สินค้าอย่างน้อย 1 รายการ · Add at least one item"); return; }
 
@@ -1166,15 +1238,43 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
     $("saveBtn").disabled=true;
     try{
       var res=await apiPost(payload);
-      toast("บันทึกแล้ว · Saved  #"+String(res.orderNo||"").split("-").pop()+"  ·  "+money(t.pay)+" ฿");
+      showDone(res.orderNo, t.pay, docs.length);
       resetOrder();
       pull(true);
     }catch(err){
       /* No signal: keep the sale, send it later. */
       queue.push(payload); saveQueue();
-      toast("ออฟไลน์ — เก็บออเดอร์ไว้แล้ว จะส่งอัตโนมัติเมื่อมีสัญญาณ");
+      showDone(null, t.pay, docs.length);
       resetOrder();
     }finally{ $("saveBtn").disabled=false; }
+  }
+
+  /* The strip above the form: what was just saved, and a way out of a mistake. */
+  var lastOrderNo=null;
+  function showDone(orderNo, pay, lines){
+    lastOrderNo = orderNo;
+    $("doneNo").textContent = orderNo ? ("✓ #"+String(orderNo).split("-").pop()) : "✓ รอส่ง";
+    $("doneAmt").textContent = (orderNo ? "บันทึกแล้ว · " : "ออฟไลน์ — จะส่งเองเมื่อเน็ตกลับมา · ")
+      + "เก็บเงิน " + money(pay) + " ฿" + (lines>1 ? "  ("+lines+" รายการ)" : "");
+    $("undoBtn").hidden = !orderNo;
+    $("doneStrip").hidden = false;
+    clearTimeout(showDone._t);
+    showDone._t = setTimeout(function(){ $("doneStrip").hidden = true; }, 45000);
+  }
+  async function undoLast(){
+    if(!lastOrderNo) return;
+    var no=lastOrderNo;
+    $("undoBtn").disabled=true;
+    try{
+      await pull(true);
+      var victims = rows.filter(function(r){ return r.orderNo===no; });
+      for(var i=0;i<victims.length;i++) await apiPost({action:"deleteRow", id:victims[i].id});
+      rows = rows.filter(function(r){ return r.orderNo!==no; });
+      lastOrderNo=null; $("doneStrip").hidden=true;
+      renderLedger(); refreshTotals();
+      toast("ยกเลิกออเดอร์แล้ว · Order removed");
+    }catch(_){ toast("ยกเลิกไม่สำเร็จ · ต้องมีสัญญาณ — ลบจากตารางด้านขวาแทนได้"); }
+    finally{ $("undoBtn").disabled=false; }
   }
 
   /* =========================================================
@@ -1270,6 +1370,9 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
     if(i!==null&&i!==undefined&&i!==""){ cart.splice(+i,1); renderBasket(); refreshTotals(); }
   });
   ["f-color","f-qty"].forEach(function(id){ $(id).addEventListener("input",refreshTotals); });
+  ["f-model","f-color","f-price","f-event"].forEach(function(id){
+    $(id).addEventListener("input", function(){ this.classList.remove("bad"); });
+  });
   $("f-model").addEventListener("input",function(){ autoPrice(); refreshTotals(); });
   $("f-model").addEventListener("change",function(){ autoPrice(); refreshTotals(); });
   $("f-price").addEventListener("input",function(){
@@ -1303,6 +1406,9 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
   $("exportBtn").addEventListener("click",exportDay);
   $("exportAll").addEventListener("click",exportAll);
   $("refreshBtn").addEventListener("click",function(){ pull(); flushQueue(true); });
+  $("undoBtn").addEventListener("click",undoLast);
+  $("openHelp").addEventListener("click",function(){ $("helpSheet").showModal(); });
+  $("closeHelp").addEventListener("click",function(){ $("helpSheet").close(); });
   $("queuedBtn").addEventListener("click",function(){ flushQueue(false); });
 
   $("tbody").addEventListener("click",async function(e){
