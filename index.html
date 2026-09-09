@@ -476,6 +476,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
                 <label for="f-nat"><b>National</b> · สัญชาติ</label>
                 <input type="text" id="f-nat" list="l-nats" placeholder="สัญชาติ">
                 <datalist id="l-nats"></datalist>
+                <input type="text" id="f-nat-other" placeholder="ระบุสัญชาติ · specify" hidden>
               </div>
             </div>
             <div class="field">
@@ -784,7 +785,24 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
     var nat=$("f-nat");
     if(sel.thai==="Thai" && (!nat.value||nat.value==="Thai")) nat.value="Thai";
     if(sel.thai==="Non-Thai" && nat.value==="Thai") nat.value="";
+    onNatChange();
   }
+  /* "Other" opens a free-text box so a nationality nobody listed still gets recorded. */
+  function isOther(v){ return /^(other|others|อื่น)/i.test(String(v||"").trim()); }
+  function onNatChange(){
+    var other=isOther($("f-nat").value);
+    $("f-nat-other").hidden = !other;
+    if(!other) $("f-nat-other").value="";
+  }
+  /* Stored as "Other (Brazilian)" — one field, no schema change, and the
+     summary still rolls every Other together. */
+  function nationalityValue(){
+    var v=$("f-nat").value.trim();
+    if(!isOther(v)) return v;
+    var spec=$("f-nat-other").value.trim();
+    return spec ? ("Other (" + spec + ")") : "Other";
+  }
+  function natBucket(v){ return isOther(v) ? "Other" : (v || ""); }
   function fillDatalist(id, arr){
     var dl=$(id); dl.innerHTML="";
     arr.forEach(function(v){ var o=document.createElement("option"); o.value=v; dl.appendChild(o); });
@@ -792,7 +810,9 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
   function applyLists(){
     fillDatalist("l-events",lists.events); fillDatalist("l-pics",lists.pics);
     fillDatalist("l-models",lists.models); fillDatalist("l-colors",lists.colors);
-    fillDatalist("l-nats",lists.nats);
+    var nats=lists.nats.slice();
+    if(!nats.some(isOther)) nats.push("Other · อื่นๆ (ระบุ)");
+    fillDatalist("l-nats",nats);
     renderChips($("c-size"),lists.sizes,"size",true);
     if(!$("f-event").value && lists.events.length===1) $("f-event").value=lists.events[0];
     if(!$("f-pic").value && lists.pics.length===1) $("f-pic").value=lists.pics[0];
@@ -1023,7 +1043,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
       sumCard("ตามไซซ์ · By size","ไซซ์ที่ขายออก",rollUp(list,function(r){return r.size;}),{sortBy:"pieces"}),
       sumCard("ตามสี · By colour","สีที่ขายออก",rollUp(list,function(r){return r.color;}),{sortBy:"pieces",limit:12}),
       sumCard("คนไทย / ต่างชาติ · Thai vs foreign","สัดส่วนลูกค้า",rollUp(list,function(r){return r.isThai;}),{showOrders:true}),
-      sumCard("สัญชาติ · Nationality","เฉพาะที่บันทึกไว้",rollUp(list,function(r){return r.nationality;}),{showOrders:true,limit:10}),
+      sumCard("สัญชาติ · Nationality","เฉพาะที่บันทึกไว้",rollUp(list,function(r){return natBucket(r.nationality);}),{showOrders:true,limit:10}),
       sumCard("เพศ · Gender","สัดส่วนลูกค้า",rollUp(list,function(r){return r.gender;}),{showOrders:true}),
       sumCard("ช่วงอายุ · Age","สัดส่วนลูกค้า",rollUp(list,function(r){return r.age;}),{showOrders:true}),
       sumCard("ตามผู้ขาย · By PIC","ยอดต่อคน",rollUp(list,function(r){return r.pic;}),{showOrders:true}),
@@ -1102,7 +1122,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
   }
   function resetOrder(){
     cart=[]; clearLineFields(); renderBasket();
-    discAuto=true; $("f-disc").value=""; $("f-nat").value=""; $("f-note").value="";
+    discAuto=true; $("f-disc").value=""; $("f-nat").value=""; $("f-nat-other").value=""; $("f-nat-other").hidden=true; $("f-note").value="";
     sel.thai=""; sel.gender=""; sel.age="";
     renderChips($("c-thai"),THAI,"thai");
     renderChips($("c-gender"),GENDER,"gender");
@@ -1124,7 +1144,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
     var head={
       event:event_, date:$("f-date").value, time:$("f-time").value,
       pic:$("f-pic").value.trim(),
-      isThai:sel.thai, nationality:$("f-nat").value.trim(), gender:sel.gender, age:sel.age,
+      isThai:sel.thai, nationality:nationalityValue(), gender:sel.gender, age:sel.age,
       note:$("f-note").value.trim(),
       discountType:discMode, discountValue:t.discValue,
       lines:t.lines.length, createdAt:new Date().toISOString()
@@ -1259,6 +1279,8 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
   });
   $("f-disc").addEventListener("input",function(){ discAuto=false; refreshTotals(); });
   $("f-date").addEventListener("change",refreshTotals);
+  $("f-nat").addEventListener("input",onNatChange);
+  $("f-nat").addEventListener("change",onNatChange);
   $("qtyMinus").addEventListener("click",function(){ var i=$("f-qty"); i.value=Math.max(1,(parseInt(i.value,10)||1)-1); refreshTotals(); });
   $("qtyPlus").addEventListener("click",function(){ var i=$("f-qty"); i.value=(parseInt(i.value,10)||1)+1; refreshTotals(); });
   $("dPct").addEventListener("click",function(){ discAuto=false; discMode="pct"; this.setAttribute("aria-pressed","true"); $("dThb").setAttribute("aria-pressed","false"); refreshTotals(); });
