@@ -289,6 +289,10 @@ dialog.sheet::backdrop{background:rgba(20,16,12,.38)}
 .adminbox > div{flex:1;min-width:0}
 .adminbox b{font-size:12.5px;font-weight:600;display:block;margin-bottom:2px}
 
+.todayonly{
+  font-size:11.5px;color:var(--sea);background:var(--sea-wash);
+  border-radius:999px;padding:5px 12px;font-weight:500;
+}
 .queued{
   border:1px solid var(--coral);background:var(--coral-wash);color:var(--coral);
   border-radius:999px;padding:4px 12px;font-size:11.5px;font-weight:500;cursor:pointer;
@@ -558,6 +562,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
           <button type="button" id="tabSum" aria-pressed="false">สรุป</button>
         </div>
         <div style="flex:1"></div>
+        <button type="button" class="btn btn-sm" id="ownerBtn" title="มุมมองเจ้าของ">เจ้าของ</button>
         <button type="button" class="btn btn-sm" id="refreshBtn" title="ดึงข้อมูลล่าสุด">↻</button>
         <button type="button" class="btn btn-sm" id="exportBtn">ดาวน์โหลดวันนี้</button>
       </div>
@@ -575,8 +580,9 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
           <label for="fl-event">กรองตามงาน · Event</label>
           <select id="fl-event"><option value="">ทั้งหมด · All events</option></select>
         </div>
-        <div class="field"><label for="fl-date">กรองตามวันที่ · Date</label><input type="date" id="fl-date"></div>
-        <div class="field" style="flex:0 0 auto"><button type="button" class="btn btn-sm" id="clearFilters">ล้างตัวกรอง</button></div>
+        <div class="field" id="dateFilterWrap"><label for="fl-date">กรองตามวันที่ · Date</label><input type="date" id="fl-date"></div>
+        <div class="field" style="flex:0 0 auto" id="clearFilterWrap"><button type="button" class="btn btn-sm" id="clearFilters">ล้างตัวกรอง</button></div>
+        <div class="todayonly" id="todayOnly" hidden>ยอดขายวันนี้เท่านั้น · Today only</div>
         <div class="spacer"></div>
         <div class="status" style="padding-bottom:6px"><span id="rowCount"></span></div>
       </div>
@@ -732,6 +738,10 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
   var lists = JSON.parse(JSON.stringify(DEFAULTS));
   var rows = [], cart = [], sel = {size:"",thai:"",gender:"",age:""};
   var discMode = "pct", discAuto = true, pendingDelete = null, view = "rows";
+  /* Staff see today only and cannot delete. The PIN unlocks the owner view for
+     this browser session; it is never persisted, so a staff phone re-locks on reload. */
+  var ownerUnlocked = false;
+  function isOwner(){ return !lists.adminPin || ownerUnlocked; }
   var queue = [], busy = false;
 
   var $ = function(id){ return document.getElementById(id); };
@@ -1114,7 +1124,8 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
      Ledger
      ========================================================= */
   function filtered(){
-    var ev=$("fl-event").value, dt=$("fl-date").value;
+    var ev=$("fl-event").value;
+    var dt = isOwner() ? $("fl-date").value : nowLocal().date;
     return rows.filter(function(r){
       if(ev && r.event!==ev) return false;
       if(dt && r.date!==dt) return false;
@@ -1178,7 +1189,18 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
       sumCard("ตามงาน · By event","ยอดต่อจุดขาย",rollUp(list,function(r){return r.event;}),{showOrders:true})
     ].join("");
   }
+  function applyMode(){
+    var owner=isOwner();
+    $("dateFilterWrap").hidden = !owner;
+    $("clearFilterWrap").hidden = !owner;
+    $("todayOnly").hidden = owner;
+    $("ownerBtn").textContent = owner ? (lists.adminPin ? "ล็อก" : "เจ้าของ") : "เจ้าของ";
+    $("ownerBtn").hidden = !lists.adminPin;
+    $("openLists").hidden = !owner && !!lists.adminPin;
+    refreshExportLabel();
+  }
   function renderLedger(){
+    applyMode();
     var list=filtered(), qty=0, rev=0, orderSet={};
     list.forEach(function(r){ qty+=(+r.qty||0); rev+=(+r.totalPayment||0); orderSet[r.orderNo||r.id]=1; });
     var orders=Object.keys(orderSet).length;
@@ -1214,7 +1236,8 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
       var lines=+r.lines||1, lineNo=+r.lineNo||1;
       var shortNo=String(r.orderNo||"").split("-").pop()||"—";
       var disc=r.discountValue?(r.discountType==="pct"?r.discountValue+"%":money(r.discountValue)+"฿"):"—";
-      var del = pendingDelete===r.id
+      var del = !isOwner() ? ''
+        : pendingDelete===r.id
         ? '<span class="confirm">ลบ?<button type="button" data-del="'+esc(r.id)+'">ใช่</button><button type="button" class="no" data-cancel="1">ไม่</button></span>'
         : '<button type="button" class="rowdel" data-ask="'+esc(r.id)+'" title="ลบรายการ">✕</button>';
       return '<tr class="'+(contd?"contd":"")+(isNew?" newgrp":"")+'">'
@@ -1366,7 +1389,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
     toast("ดาวน์โหลดทั้งหมดแล้ว");
   }
   function refreshExportLabel(){
-    var day=$("fl-date").value||nowLocal().date;
+    var day=(isOwner() && $("fl-date").value)||nowLocal().date;
     $("exportBtn").textContent="ดาวน์โหลด "+fmtDate(day);
     $("exportBtn").title="ส่งออกเฉพาะวันที่ "+fmtDate(day);
   }
@@ -1401,9 +1424,23 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
     $("allCount").textContent="ทุกงาน ทุกวัน — "+rows.length.toLocaleString()+" รายการ · backend only";
     $("listSheet").showModal();
   }
+  var pinPurpose = "admin";   /* "admin" opens the settings sheet, "owner" unlocks the full ledger */
   function tryPin(){
-    if($("f-pin").value.trim()===String(lists.adminPin)){ $("pinSheet").close(); openAdmin(); }
+    if($("f-pin").value.trim()===String(lists.adminPin)){
+      $("pinSheet").close();
+      if(pinPurpose==="owner"){
+        ownerUnlocked=true; renderLedger();
+        toast("มุมมองเจ้าของ · Owner view — เห็นทุกวันและลบรายการได้");
+      } else openAdmin();
+    }
     else { $("pinNote").textContent="รหัสไม่ถูกต้อง · Wrong PIN — ลองอีกครั้ง"; $("f-pin").select(); }
+  }
+  function askPin(purpose, note){
+    pinPurpose=purpose;
+    $("f-pin").value="";
+    $("pinNote").textContent=note;
+    $("pinSheet").showModal();
+    setTimeout(function(){ $("f-pin").focus(); },30);
   }
 
   /* =========================================================
@@ -1496,8 +1533,16 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
   });
 
   $("openLists").addEventListener("click",function(){
-    if(lists.adminPin){ $("f-pin").value=""; $("pinNote").textContent="ใส่รหัสผู้ดูแล · Enter the admin PIN."; $("pinSheet").showModal(); setTimeout(function(){ $("f-pin").focus(); },30); }
+    if(lists.adminPin) askPin("admin","ใส่รหัสผู้ดูแล · Enter the admin PIN.");
     else openAdmin();
+  });
+  $("ownerBtn").addEventListener("click",function(){
+    if(isOwner() && lists.adminPin){
+      ownerUnlocked=false; renderLedger();
+      toast("ล็อกแล้ว · Staff view — เห็นเฉพาะยอดวันนี้");
+    } else {
+      askPin("owner","ใส่รหัสเจ้าของเพื่อดูยอดย้อนหลังและแก้ไขรายการ");
+    }
   });
   $("okPin").addEventListener("click",tryPin);
   $("f-pin").addEventListener("keydown",function(e){ if(e.key==="Enter"){ e.preventDefault(); tryPin(); } });
