@@ -451,15 +451,15 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
               </div>
               <div class="field">
                 <label for="f-model"><b>รุ่น / รหัสสินค้า</b> · Model / SKU <span class="req">*</span></label>
-                <input type="text" id="f-model" list="l-models" placeholder="ชื่อรุ่น หรือ SKU ID" required>
-                <datalist id="l-models"></datalist>
+                <select id="f-model"></select>
+                <input type="text" id="f-model-other" placeholder="พิมพ์ชื่อรุ่น หรือ SKU" hidden>
               </div>
             </div>
             <div class="grid g-line">
               <div class="field">
                 <label for="f-color"><b>สี</b> · Color <span class="req">*</span></label>
-                <input type="text" id="f-color" list="l-colors" placeholder="พิมพ์หรือเลือกสี" required>
-                <datalist id="l-colors"></datalist>
+                <select id="f-color"></select>
+                <input type="text" id="f-color-other" placeholder="พิมพ์สี" hidden>
               </div>
               <div class="field">
                 <label for="f-price"><b>ราคา/ชิ้น</b> · Price ฿ <span class="req">*</span></label>
@@ -656,6 +656,11 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
     <div class="field"><label for="e-sizes">Sizes · ไซซ์</label><textarea id="e-sizes"></textarea></div>
     <div class="field"><label for="e-nats">Nationalities · สัญชาติ</label><textarea id="e-nats"></textarea></div>
     <div class="field">
+      <label for="e-variants">สีของแต่ละรุ่น · Colours per model <span class="fmt">(SKU (ชื่อรุ่น)=สี, สี, สี)</span></label>
+      <textarea id="e-variants" style="min-height:110px"></textarea>
+      <p class="note">เลือกรุ่นแล้วช่องสีจะเหลือเฉพาะสีของรุ่นนั้น · รุ่นที่ไม่ได้ระบุไว้จะเห็นสีทั้งหมด</p>
+    </div>
+    <div class="field">
       <label for="e-prices">ราคาต่อชิ้น · Price book <span class="fmt">(SKU (ชื่อรุ่น)=ราคา ต่อบรรทัด)</span></label>
       <textarea id="e-prices" style="min-height:110px"></textarea>
       <p class="note">เลือกรุ่นแล้วราคาจะขึ้นเองอัตโนมัติ · พนักงานยังพิมพ์ทับได้</p>
@@ -716,6 +721,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
     sizes:  ["XS","S","M","L","XL","XXL","Free size"],
     nats:   ["Thai","Chinese","Japanese","Korean","Russian","American","British","German","French","Australian","Indian","Singaporean","Malaysian"],
     promo:  "2=5, 3=10",
+    variants: "1145 (EASY RUNNING SHORTS)=Blue Beach, Grey, Black\nP118 (BEACH BOARDSHORTS)=Brick, Grey, Navy, Black, White\nBWL004 (EVERYDAY SHIRT)=Black, White, Sand\nBWL005 (HOLIDAY STRIPE SHIRT)=Blue Beach, Palm Paradise, Sandy Coasts, Triple Hill\nAPR BIKER (APR BIKER)=Pink, Navy, Black, Brown\nAPRL Polo (APRL POLO)=Navy\nASP013 (SEARCH PANTS)=Black, Muted Pink, Brown\nASP016 (UV JACKET)=Cream, White\nCSAP001 (CITY BRA)=Cream\nCSAP004 (NOW HERE BRA)=Brown\nCSAP008 (CAMP SHORTS)=Cream\nCSAP009 (SANDTONE PANTS)=Brown\nP128 (JOY VIBE SKIRT)=Midnight, White, Purple, Blue Mist\nP125 (JOY VIBE TOP)=Blue Mist, Purple, Midnight\nTime Pants (TIME PANTS)=Orange\nTrain Time Tight (TRAIN TIME TIGHT PANTS)=Wine, Blue Beach, Green\nUltra Move Capri (ULTRA MOVE CAPRI)=Iris, Forest, Black, Wine, Blue\nAC038 (BANDANA)=Alive, Blissful Blue, Ease, Golden Glow, Midnight, Reef, Beach Paradise\nCC019 (BOARDSHORTS)=White Coconut, Navy Coconut, Navy Turtle, Wave Rider, Villa Breeze, Sunny en Route, Sea เก่า, Palm เก่า\nCC026 (SUMMER BEACH SHIRT)=White Coconut, Navy Coconut, Navy Turtle, Wave Rider, Villa Breeze, Sunny en Route, Sea เก่า\nCC028 (SUMMER BEACH SHIRT)=Sun, Sky, Sea, Palm\nCC035 (BOARDSHORTS)=Sun, Sky, Sea, Palm\nAPT001 (SUMMER TEE)=Meaning, Club, Activity, The Summer Sun, Sea lobster, Quad Islands\nAPT002 (SUMMER TEE)=AP-01Sunrise, AP-02SeaSky, AP-05Palm\nAPT004 (SUMMER TEE)=CULT-01Ocean, CULT-02Sunrise, CULT-03Sunrise Ocean, CULT-04Midnight\nCC027 (SUMMER HOLIDAY DREAMS)=Sunrise Whisper, The Andaman Blue, Tropical melt, Island solitude\nCCKID019 (KIDS BOARDSHORTS)=White Coconut, Navy Coconut, Navy Turtle\nCCKID026 (KIDS SUMMER BEACH SHIRT)=White Coconut, Navy Coconut, Navy Turtle\nAC028 (ADVENTURE CAP)=Brick, Black, Grey, Navy, Cream\nAC029 (SUMMER CAP)=Good surfing, Love! This's brown, Manta, Oh! Red, Right! My blue, Sea lobster\nAC039 (SUMMER CAP)=Coastal Club",
     prices: "1145 (EASY RUNNING SHORTS)=890\nP118 (BEACH BOARDSHORTS)=890\nBWL004 (EVERYDAY SHIRT)=890\nBWL005 (HOLIDAY STRIPE SHIRT)=990\nAPR BIKER (APR BIKER)=990\nAPRL Polo (APRL POLO)=1490\nASP013 (SEARCH PANTS)=1490\nASP016 (UV JACKET)=1190\nCSAP001 (CITY BRA)=1190\nCSAP004 (NOW HERE BRA)=1190\nCSAP008 (CAMP SHORTS)=1290\nCSAP009 (SANDTONE PANTS)=1490\nP128 (JOY VIBE SKIRT)=1290\nP125 (JOY VIBE TOP)=1190\nAC038 (BANDANA)=690\nCC019 (BOARDSHORTS)=890\nCC026 (SUMMER BEACH SHIRT)=1490\nCC028 (SUMMER BEACH SHIRT)=1490\nCC035 (BOARDSHORTS)=890\nAPT001 (SUMMER TEE)=690\nAPT002 (SUMMER TEE)=690\nAPT004 (SUMMER TEE)=690\nCC027 (SUMMER HOLIDAY DREAMS)=1490\nCCKID019 (KIDS BOARDSHORTS)=690\nCCKID026 (KIDS SUMMER BEACH SHIRT)=990\nAC028 (ADVENTURE CAP)=790\nAC029 (SUMMER CAP)=690\nAC039 (SUMMER CAP)=690",
     adminPin: ""
   };
@@ -813,6 +819,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
         });
         if(typeof data.config.promo==="string") lists.promo=data.config.promo;
         if(typeof data.config.prices==="string" && data.config.prices) lists.prices=data.config.prices;
+        if(typeof data.config.variants==="string" && data.config.variants) lists.variants=data.config.variants;
         lists.adminPin = typeof data.config.adminPin==="string" ? data.config.adminPin : "";
         applyLists();
       }
@@ -866,12 +873,57 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
   }
   function natBucket(v){ return isOther(v) ? "Other" : (v || ""); }
   function fillDatalist(id, arr){
-    var dl=$(id); dl.innerHTML="";
+    var dl=$(id); if(!dl) return;
+    dl.innerHTML="";
     arr.forEach(function(v){ var o=document.createElement("option"); o.value=v; dl.appendChild(o); });
+  }
+  var OTHER_OPT = "อื่นๆ · Other (พิมพ์เอง)";
+  /* A picker beats typing at a booth: fewer taps, no spelling drift in the data.
+     The last option always lets staff record something the list doesn't have. */
+  function fillSelect(id, arr, placeholder, keep){
+    var el=$(id), had = keep ? el.value : "";
+    el.innerHTML="";
+    var ph=document.createElement("option");
+    ph.value=""; ph.textContent=placeholder; el.appendChild(ph);
+    arr.forEach(function(v){
+      var o=document.createElement("option"); o.value=v; o.textContent=v; el.appendChild(o);
+    });
+    var oth=document.createElement("option");
+    oth.value=OTHER_OPT; oth.textContent=OTHER_OPT; el.appendChild(oth);
+    if(had && arr.indexOf(had)>=0) el.value=had;
+  }
+  /* "SKU (NAME)=Colour, Colour" per line */
+  function variantMap(){
+    var map={};
+    String(lists.variants||"").split("\n").forEach(function(line){
+      var i=line.indexOf("=");
+      if(i<1) return;
+      var k=line.slice(0,i).trim();
+      var cols=line.slice(i+1).split(",").map(function(c){ return c.trim(); }).filter(Boolean);
+      if(k && cols.length) map[k]=cols;
+    });
+    return map;
+  }
+  function isOtherOpt(v){ return v===OTHER_OPT; }
+  function modelValue(){
+    var v=$("f-model").value;
+    return isOtherOpt(v) ? $("f-model-other").value.trim() : v.trim();
+  }
+  function colorValue(){
+    var v=$("f-color").value;
+    return isOtherOpt(v) ? $("f-color-other").value.trim() : v.trim();
+  }
+  /* Colours narrow to the chosen model; an unlisted model shows everything. */
+  function refreshColors(){
+    var chosen=$("f-model").value;
+    var only = isOtherOpt(chosen) ? null : variantMap()[chosen];
+    fillSelect("f-color", only || lists.colors, only ? "— เลือกสี —" : "— เลือกสี (ทุกสี) —", true);
+    $("f-color-other").hidden = !isOtherOpt($("f-color").value);
   }
   function applyLists(){
     fillDatalist("l-events",lists.events); fillDatalist("l-pics",lists.pics);
-    fillDatalist("l-models",lists.models); fillDatalist("l-colors",lists.colors);
+    fillSelect("f-model", lists.models, "— เลือกรุ่น / SKU —", true);
+    refreshColors();
     var nats=lists.nats.slice();
     if(!nats.some(isOther)) nats.push("Other · อื่นๆ (ระบุ)");
     fillDatalist("l-nats",nats);
@@ -884,8 +936,8 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
      Item lines
      ========================================================= */
   function missingOnLine(){
-    if(!$("f-model").value.trim()) return {el:$("f-model"), msg:"ใส่รุ่นหรือ SKU ก่อน · Model / SKU required"};
-    if(!$("f-color").value.trim()) return {el:$("f-color"), msg:"เลือกสีก่อน · Color required"};
+    if(!modelValue()) return {el: isOtherOpt($("f-model").value) ? $("f-model-other") : $("f-model"), msg:"เลือกรุ่น / SKU ก่อน · Model required"};
+    if(!colorValue()) return {el: isOtherOpt($("f-color").value) ? $("f-color-other") : $("f-color"), msg:"เลือกสีก่อน · Color required"};
     if(!sel.size) return {el:null, msg:"เลือกไซซ์ก่อน · Size required"};
     if($("f-price").value==="") return {el:$("f-price"), msg:"ใส่ราคาต่อชิ้นก่อน · Unit price required"};
     return null;
@@ -895,8 +947,8 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
     if(missingOnLine()) return null;
     return {
       qty: Math.max(1, parseInt($("f-qty").value,10)||1),
-      model: $("f-model").value.trim(),
-      color: $("f-color").value.trim(),
+      model: modelValue(),
+      color: colorValue(),
       size: sel.size,
       price: parseFloat($("f-price").value)||0
     };
@@ -918,7 +970,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
   }
   var priceTouched=false;
   function autoPrice(){
-    var known=priceBook()[$("f-model").value.trim().toLowerCase()];
+    var known=priceBook()[modelValue().toLowerCase()];
     if(known && !priceTouched){
       $("f-price").value=String(known);
       $("f-price").classList.add("auto");
@@ -927,10 +979,13 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
     }
   }
   function linePartlyFilled(){
-    return !!($("f-model").value.trim() || $("f-color").value.trim() || sel.size || $("f-price").value!=="");
+    return !!(modelValue() || colorValue() || sel.size || $("f-price").value!=="");
   }
   function clearLineFields(){
-    $("f-qty").value=1; $("f-model").value=""; $("f-color").value=""; $("f-price").value="";
+    $("f-qty").value=1; $("f-price").value="";
+    $("f-model").value=""; $("f-model-other").value=""; $("f-model-other").hidden=true;
+    $("f-color-other").value=""; $("f-color-other").hidden=true;
+    refreshColors();
     priceTouched=false; $("f-price").classList.remove("auto");
     sel.size=""; renderChips($("c-size"),lists.sizes,"size",true);
   }
@@ -1211,7 +1266,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
     if(linePartlyFilled() && !currentLine()){ flagGap(missingOnLine()); return; }
     clearFlags();
     var t=compute();
-    if(!t.lines.length){ $("f-model").focus(); toast("ใส่สินค้าอย่างน้อย 1 รายการ · Add at least one item"); return; }
+    if(!t.lines.length){ flagGap({el:$("f-model"), msg:"เลือกสินค้าอย่างน้อย 1 รายการ · Choose an item first"}); return; }
 
     var head={
       event:event_, date:$("f-date").value, time:$("f-time").value,
@@ -1342,6 +1397,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
     $("e-pin").value=lists.adminPin||"";
     $("e-promo").value=lists.promo||"";
     $("e-prices").value=lists.prices||"";
+    $("e-variants").value=lists.variants||"";
     $("allCount").textContent="ทุกงาน ทุกวัน — "+rows.length.toLocaleString()+" รายการ · backend only";
     $("listSheet").showModal();
   }
@@ -1369,12 +1425,24 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
     var i=e.target.getAttribute&&e.target.getAttribute("data-cart");
     if(i!==null&&i!==undefined&&i!==""){ cart.splice(+i,1); renderBasket(); refreshTotals(); }
   });
-  ["f-color","f-qty"].forEach(function(id){ $(id).addEventListener("input",refreshTotals); });
-  ["f-model","f-color","f-price","f-event"].forEach(function(id){
+  $("f-qty").addEventListener("input",refreshTotals);
+  ["f-model","f-color","f-price","f-event","f-model-other","f-color-other"].forEach(function(id){
     $(id).addEventListener("input", function(){ this.classList.remove("bad"); });
+    $(id).addEventListener("change", function(){ this.classList.remove("bad"); });
   });
-  $("f-model").addEventListener("input",function(){ autoPrice(); refreshTotals(); });
-  $("f-model").addEventListener("change",function(){ autoPrice(); refreshTotals(); });
+  $("f-model").addEventListener("change",function(){
+    $("f-model-other").hidden = !isOtherOpt(this.value);
+    if(!isOtherOpt(this.value)) $("f-model-other").value="";
+    priceTouched=false;
+    refreshColors(); autoPrice(); refreshTotals();
+  });
+  $("f-model-other").addEventListener("input",function(){ autoPrice(); refreshTotals(); });
+  $("f-color").addEventListener("change",function(){
+    $("f-color-other").hidden = !isOtherOpt(this.value);
+    if(!isOtherOpt(this.value)) $("f-color-other").value="";
+    refreshTotals();
+  });
+  $("f-color-other").addEventListener("input",refreshTotals);
   $("f-price").addEventListener("input",function(){
     priceTouched = $("f-price").value!=="";
     $("f-price").classList.remove("auto");
@@ -1442,6 +1510,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
     lists.adminPin=$("e-pin").value.trim();
     lists.promo=$("e-promo").value.trim();
     lists.prices=$("e-prices").value.trim();
+    lists.variants=$("e-variants").value.trim();
     applyLists(); refreshTotals(); $("listSheet").close();
     try{ await apiPost({action:"saveConfig", config:lists}); toast("บันทึกรายการแล้ว · Saved to the Sheet"); }
     catch(_){ toast("บันทึกไม่สำเร็จ · ต้องมีสัญญาณอินเทอร์เน็ต"); }
