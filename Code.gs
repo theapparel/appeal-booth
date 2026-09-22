@@ -120,13 +120,21 @@ function staffMap_(cfg) {
   return map;
 }
 
+/* Four answers:
+ *   owner — the admin PIN, or nothing locked at all. Everything.
+ *   staff — a personal PIN. Their own sales, today.
+ *   guest — no staff PINs are set up, so the shared view as it always was:
+ *           today's sales for the whole booth, no settings.
+ *   none  — staff PINs ARE set up and this is not one of them. Nothing. */
 function whoIs_(cfg, pin) {
   pin = String(pin == null ? '' : pin).trim();
   var admin = String(cfg.adminPin || '').trim();
   var staff = staffMap_(cfg);
-  if (!admin && !Object.keys(staff).length) return { role: 'owner', name: '' };
+  var hasStaff = Object.keys(staff).length > 0;
   if (admin && pin === admin) return { role: 'owner', name: '' };
   if (pin && staff[pin]) return { role: 'staff', name: staff[pin] };
+  if (!admin && !hasStaff)  return { role: 'owner', name: '' };
+  if (!hasStaff)            return { role: 'guest', name: '' };
   return { role: 'none', name: '' };
 }
 
@@ -226,15 +234,17 @@ function doGet(e) {
     if (action === 'list' || action === 'config') {
       var out = { ok: true, role: who.role, me: who.name, config: publicConfig_(cfg, who) };
       if (action === 'list') {
+        /* The filter is here, not in the page: a seller's browser never
+         * receives anyone else's rows in the first place. */
+        var day = scopeDate_(p.date);
         if (who.role === 'owner') {
           out.rows = readOrders_();
         } else if (who.role === 'staff') {
-          /* The filter is here, not in the page: a seller's browser never
-           * receives anyone else's rows in the first place. */
-          var day = scopeDate_(p.date);
           out.rows = readOrders_().filter(function (r) {
             return r.pic === who.name && r.date === day;
           });
+        } else if (who.role === 'guest') {
+          out.rows = readOrders_().filter(function (r) { return r.date === day; });
         } else {
           out.rows = [];
         }
@@ -287,13 +297,15 @@ function doPost(e) {
         var vals2 = sh2.getRange(2, 1, last - 1, COLS.length).getValues();
         for (var i = 0; i < vals2.length; i++) {
           if (String(vals2[i][0]) !== String(body.id)) continue;
-          /* Staff may undo their own sale from today, nothing else. */
-          if (who.role === 'staff') {
-            var rowPic  = asText_(vals2[i][COLS.indexOf('pic')]);
-            var rowDate = asText_(vals2[i][COLS.indexOf('date')]);
-            if (rowPic !== who.name || rowDate !== scopeDate_(body.date)) {
-              return json_({ ok: false, error: 'not yours' });
-            }
+          /* Staff may undo their own sale from today, nothing else.
+           * The shared guest view may undo anything from today. */
+          var rowPic  = asText_(vals2[i][COLS.indexOf('pic')]);
+          var rowDate = asText_(vals2[i][COLS.indexOf('date')]);
+          if (who.role === 'staff' && (rowPic !== who.name || rowDate !== scopeDate_(body.date))) {
+            return json_({ ok: false, error: 'not yours' });
+          }
+          if (who.role === 'guest' && rowDate !== scopeDate_(body.date)) {
+            return json_({ ok: false, error: 'today only' });
           }
           sh2.deleteRow(i + 2);
           return json_({ ok: true, deleted: body.id });

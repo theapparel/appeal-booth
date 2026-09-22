@@ -792,10 +792,14 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
     me={role:"none",name:"",pin:""};
     try{ localStorage.removeItem(LS_ME); }catch(_){}
   }
-  /* "gated" = the owner has set up PINs at all. Without them nothing changes. */
+  /* gated      = there is an owner lock of some kind.
+     needsSignIn = per-person PINs exist, so the page must ask who is here.
+     With only an owner PIN and no staff PINs, nothing changes from before:
+     the booth shares one view of today and the เจ้าของ button unlocks it. */
   function gated(){ return !!(lists.hasStaffPins || lists.hasAdminPin || lists.adminPin || lists.staffPins); }
+  function needsSignIn(){ return !!(lists.hasStaffPins || lists.staffPins); }
   function isOwner(){ return !gated() || me.role==="owner"; }
-  function isStaff(){ return gated() && me.role==="staff"; }
+  function isStaff(){ return me.role==="staff" && !!me.name; }
   function staffMap(){
     var map={};
     String(lists.staffPins||"").split("\n").forEach(function(line){
@@ -914,7 +918,10 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
       /* The server's answer about who we are outranks anything this device thinks. */
       if(typeof data.role==="string"){
         if(data.role==="none"){ if(me.pin) forgetMe(); }
-        else { me.role=data.role; me.name=data.me||me.name||""; }
+        else {
+          me.role=data.role;
+          me.name = data.role==="staff" ? (data.me||me.name||"") : "";
+        }
       }
       setStatus("live","เชื่อมต่อแล้ว · Google Sheet");
       updateGate();
@@ -1301,11 +1308,11 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
 
   /* ---------- the doorway ---------- */
   function updateGate(){
-    var need = gated() && me.role==="none";
+    var need = needsSignIn() && me.role!=="staff" && me.role!=="owner";
     if(need){
       if(!$("signSheet").open){ $("signSheet").showModal(); setTimeout(function(){ $("f-signpin").focus(); },30); }
     } else if($("signSheet").open){ $("signSheet").close(); }
-    $("whoBtn").hidden = !gated() || me.role==="none";
+    $("whoBtn").hidden = !(me.role==="staff" || me.role==="owner");
     $("whoName").textContent = me.role==="owner" ? "เจ้าของ · Owner" : (me.name||"");
     /* The seller's own name signs the sale; they cannot type someone else in. */
     if(isStaff() && me.name){ $("f-pic").value=me.name; $("f-pic").readOnly=true; $("f-pic").title="ชื่อจากรหัสที่เข้าใช้งาน"; }
@@ -1334,7 +1341,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
     me.pin=v; me.role=guess.role; me.name=guess.name;
     $("okSign").disabled=true;
     try{ await pull(true); } finally { $("okSign").disabled=false; }
-    if(me.role==="none"){
+    if(me.role!=="staff" && me.role!=="owner"){
       /* A wrong guess must not sign out whoever was already on this device. */
       me.role=before.role; me.name=before.name; me.pin=before.pin;
       if(me.role==="staff" && me.pin) saveMe();
@@ -1697,7 +1704,9 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
   $("okSign").addEventListener("click",trySign);
   $("f-signpin").addEventListener("keydown",function(e){ if(e.key==="Enter"){ e.preventDefault(); trySign(); } });
   /* Esc must not dismiss the doorway. */
-  $("signSheet").addEventListener("cancel",function(e){ if(gated() && me.role==="none") e.preventDefault(); });
+  $("signSheet").addEventListener("cancel",function(e){
+    if(needsSignIn() && me.role!=="staff" && me.role!=="owner") e.preventDefault();
+  });
   $("okPin").addEventListener("click",tryPin);
   $("f-pin").addEventListener("keydown",function(e){ if(e.key==="Enter"){ e.preventDefault(); tryPin(); } });
   $("closePin").addEventListener("click",function(){ $("pinSheet").close(); });
