@@ -22,7 +22,7 @@ var COLS = [
   'isThai','nationality','gender','age','note','createdAt'
 ];
 
-var CONFIG_KEYS = ['events','pics','models','colors','sizes','nats','promo','variants','prices','adminPin'];
+var CONFIG_KEYS = ['events','pics','models','colors','sizes','nats','promo','variants','prices','adminPin','staffPins'];
 var LIST_KEYS   = ['events','pics','models','colors','sizes','nats'];
 
 /* ---------- helpers ---------- */
@@ -63,7 +63,8 @@ function configSheet_() {
       ["promo", "2=5, 3=10"],
       ["variants", "1145 (EASY RUNNING SHORTS)=Blue Beach, Grey, Black\nP118 (BEACH BOARDSHORTS)=Brick, Grey, Navy, Black, White\nBWL004 (EVERYDAY SHIRT)=Black, White, Sand\nBWL005 (HOLIDAY STRIPE SHIRT)=Blue Beach, Palm Paradise, Sandy Coasts, Triple Hill\nAPR BIKER (APR BIKER)=Pink, Navy, Black, Brown\nAPRL Polo (APRL POLO)=Navy\nASP013 (SEARCH PANTS)=Black, Muted Pink, Brown\nASP016 (UV JACKET)=Cream, White\nCSAP001 (CITY BRA)=Cream\nCSAP004 (NOW HERE BRA)=Brown\nCSAP008 (CAMP SHORTS)=Cream\nCSAP009 (SANDTONE PANTS)=Brown\nP128 (JOY VIBE SKIRT)=Midnight, White, Purple, Blue Mist\nP125 (JOY VIBE TOP)=Blue Mist, Purple, Midnight\nTime Pants (TIME PANTS)=Orange\nTrain Time Tight (TRAIN TIME TIGHT PANTS)=Wine, Blue Beach, Green\nUltra Move Capri (ULTRA MOVE CAPRI)=Iris, Forest, Black, Wine, Blue\nAC038 (BANDANA)=Alive, Blissful Blue, Ease, Golden Glow, Midnight, Reef, Beach Paradise\nCC019 (BOARDSHORTS)=White Coconut, Navy Coconut, Navy Turtle, Wave Rider, Villa Breeze, Sunny en Route, Sea เก่า, Palm เก่า\nCC026 (SUMMER BEACH SHIRT)=White Coconut, Navy Coconut, Navy Turtle, Wave Rider, Villa Breeze, Sunny en Route, Sea เก่า\nCC028 (SUMMER BEACH SHIRT)=Sun, Sky, Sea, Palm\nCC035 (BOARDSHORTS)=Sun, Sky, Sea, Palm\nAPT001 (SUMMER TEE)=Meaning, Club, Activity, The Summer Sun, Sea lobster, Quad Islands\nAPT002 (SUMMER TEE)=AP-01Sunrise, AP-02SeaSky, AP-05Palm\nAPT004 (SUMMER TEE)=CULT-01Ocean, CULT-02Sunrise, CULT-03Sunrise Ocean, CULT-04Midnight\nCC027 (SUMMER HOLIDAY DREAMS)=Sunrise Whisper, The Andaman Blue, Tropical melt, Island solitude\nCCKID019 (KIDS BOARDSHORTS)=White Coconut, Navy Coconut, Navy Turtle\nCCKID026 (KIDS SUMMER BEACH SHIRT)=White Coconut, Navy Coconut, Navy Turtle\nAC028 (ADVENTURE CAP)=Brick, Black, Grey, Navy, Cream\nAC029 (SUMMER CAP)=Good surfing, Love! This's brown, Manta, Oh! Red, Right! My blue, Sea lobster\nAC039 (SUMMER CAP)=Coastal Club"],
       ["prices", "1145 (EASY RUNNING SHORTS)=890\nP118 (BEACH BOARDSHORTS)=890\nBWL004 (EVERYDAY SHIRT)=890\nBWL005 (HOLIDAY STRIPE SHIRT)=990\nAPR BIKER (APR BIKER)=990\nAPRL Polo (APRL POLO)=1490\nASP013 (SEARCH PANTS)=1490\nASP016 (UV JACKET)=1190\nCSAP001 (CITY BRA)=1190\nCSAP004 (NOW HERE BRA)=1190\nCSAP008 (CAMP SHORTS)=1290\nCSAP009 (SANDTONE PANTS)=1490\nP128 (JOY VIBE SKIRT)=1290\nP125 (JOY VIBE TOP)=1190\nAC038 (BANDANA)=690\nCC019 (BOARDSHORTS)=890\nCC026 (SUMMER BEACH SHIRT)=1490\nCC028 (SUMMER BEACH SHIRT)=1490\nCC035 (BOARDSHORTS)=890\nAPT001 (SUMMER TEE)=690\nAPT002 (SUMMER TEE)=690\nAPT004 (SUMMER TEE)=690\nCC027 (SUMMER HOLIDAY DREAMS)=1490\nCCKID019 (KIDS BOARDSHORTS)=690\nCCKID026 (KIDS SUMMER BEACH SHIRT)=990\nAC028 (ADVENTURE CAP)=790\nAC029 (SUMMER CAP)=690\nAC039 (SUMMER CAP)=690"],
-      ["adminPin", ""]
+      ["adminPin", ""],
+      ["staffPins", "อีฟ (ชนัญญา พูนบำเพ็ญ)=9182\nนุ่น (วรรณิกา ธาราชัย)=0331"]
     ];
     sh.getRange(2, 1, seed.length, 2).setValues(seed);
     sh.setColumnWidth(2, 420);
@@ -99,6 +100,65 @@ function writeConfig_(cfg) {
   var last = sh.getLastRow();
   if (last > 1) sh.getRange(2, 1, last - 1, 2).clearContent();
   sh.getRange(2, 1, rows.length, 2).setValues(rows);
+}
+
+/* ---------- who is asking ----------
+ * Config holds two kinds of PIN:
+ *   adminPin  — the owner. Sees every row, every day, and can edit settings.
+ *   staffPins — one line per seller, "ชื่อ=PIN". Sees only their own rows, today.
+ * With neither set the log is open to anyone with the URL, as it was before.   */
+
+function staffMap_(cfg) {
+  var map = {};
+  String(cfg.staffPins || '').split('\n').forEach(function (line) {
+    var i = line.lastIndexOf('=');
+    if (i < 1) return;
+    var name = line.slice(0, i).trim();
+    var pin  = line.slice(i + 1).trim();
+    if (name && pin) map[pin] = name;
+  });
+  return map;
+}
+
+function whoIs_(cfg, pin) {
+  pin = String(pin == null ? '' : pin).trim();
+  var admin = String(cfg.adminPin || '').trim();
+  var staff = staffMap_(cfg);
+  if (!admin && !Object.keys(staff).length) return { role: 'owner', name: '' };
+  if (admin && pin === admin) return { role: 'owner', name: '' };
+  if (pin && staff[pin]) return { role: 'staff', name: staff[pin] };
+  return { role: 'none', name: '' };
+}
+
+/* The PINs themselves never leave the Sheet unless the owner is asking. */
+function publicConfig_(cfg, who) {
+  var out = {};
+  Object.keys(cfg).forEach(function (k) {
+    if (k === 'adminPin' || k === 'staffPins') return;
+    out[k] = cfg[k];
+  });
+  out.hasAdminPin  = !!String(cfg.adminPin || '').trim();
+  out.hasStaffPins = Object.keys(staffMap_(cfg)).length > 0;
+  if (who.role === 'owner') {
+    out.adminPin  = cfg.adminPin  || '';
+    out.staffPins = cfg.staffPins || '';
+  }
+  return out;
+}
+
+function today_() {
+  return Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd');
+}
+
+/* Staff see "today". The device says which day it is on; we accept it only when
+ * it is within a day of the script's own clock, so a wrong project timezone
+ * cannot hide a seller's own sales, and nobody can ask for last week. */
+function scopeDate_(want) {
+  var t = today_();
+  want = String(want == null ? '' : want).trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(want)) return t;
+  var diff = Math.abs(new Date(want + 'T00:00:00Z') - new Date(t + 'T00:00:00Z')) / 86400000;
+  return diff <= 1 ? want : t;
 }
 
 /* Dates are stored as plain yyyy-mm-dd text so no locale can reinterpret them. */
@@ -156,15 +216,30 @@ function nextOrderNo_(sh, date) {
 
 function doGet(e) {
   try {
-    var action = (e && e.parameter && e.parameter.action) || 'list';
-    if (action === 'list') {
-      return json_({ ok: true, rows: readOrders_(), config: readConfig_() });
-    }
-    if (action === 'config') {
-      return json_({ ok: true, config: readConfig_() });
-    }
-    if (action === 'ping') {
-      return json_({ ok: true, pong: true });
+    var p = (e && e.parameter) || {};
+    var action = p.action || 'list';
+    if (action === 'ping') return json_({ ok: true, pong: true });
+
+    var cfg = readConfig_();
+    var who = whoIs_(cfg, p.pin);
+
+    if (action === 'list' || action === 'config') {
+      var out = { ok: true, role: who.role, me: who.name, config: publicConfig_(cfg, who) };
+      if (action === 'list') {
+        if (who.role === 'owner') {
+          out.rows = readOrders_();
+        } else if (who.role === 'staff') {
+          /* The filter is here, not in the page: a seller's browser never
+           * receives anyone else's rows in the first place. */
+          var day = scopeDate_(p.date);
+          out.rows = readOrders_().filter(function (r) {
+            return r.pic === who.name && r.date === day;
+          });
+        } else {
+          out.rows = [];
+        }
+      }
+      return json_(out);
     }
     return json_({ ok: false, error: 'unknown action' });
   } catch (err) {
@@ -181,6 +256,9 @@ function doPost(e) {
   }
   try {
     var body = JSON.parse((e && e.postData && e.postData.contents) || '{}');
+    var cfg = readConfig_();
+    var who = whoIs_(cfg, body.pin);
+    if (who.role === 'none') return json_({ ok: false, error: 'pin required' });
 
     if (body.action === 'addOrder') {
       var sh = ordersSheet_();
@@ -190,6 +268,8 @@ function doPost(e) {
       var values = lines.map(function (r) {
         r.id = Utilities.getUuid();
         r.orderNo = orderNo;
+        /* A seller's own PIN signs the sale — the name cannot be typed over. */
+        if (who.role === 'staff') r.pic = who.name;
         return COLS.map(function (k) { return r[k] == null ? '' : r[k]; });
       });
       if (values.length) {
@@ -204,18 +284,26 @@ function doPost(e) {
       var sh2 = ordersSheet_();
       var last = sh2.getLastRow();
       if (last >= 2) {
-        var ids = sh2.getRange(2, 1, last - 1, 1).getValues();
-        for (var i = 0; i < ids.length; i++) {
-          if (String(ids[i][0]) === String(body.id)) {
-            sh2.deleteRow(i + 2);
-            return json_({ ok: true, deleted: body.id });
+        var vals2 = sh2.getRange(2, 1, last - 1, COLS.length).getValues();
+        for (var i = 0; i < vals2.length; i++) {
+          if (String(vals2[i][0]) !== String(body.id)) continue;
+          /* Staff may undo their own sale from today, nothing else. */
+          if (who.role === 'staff') {
+            var rowPic  = asText_(vals2[i][COLS.indexOf('pic')]);
+            var rowDate = asText_(vals2[i][COLS.indexOf('date')]);
+            if (rowPic !== who.name || rowDate !== scopeDate_(body.date)) {
+              return json_({ ok: false, error: 'not yours' });
+            }
           }
+          sh2.deleteRow(i + 2);
+          return json_({ ok: true, deleted: body.id });
         }
       }
       return json_({ ok: true, deleted: null });
     }
 
     if (body.action === 'saveConfig') {
+      if (who.role !== 'owner') return json_({ ok: false, error: 'owner only' });
       writeConfig_(body.config || {});
       return json_({ ok: true });
     }

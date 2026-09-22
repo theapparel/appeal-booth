@@ -71,11 +71,37 @@ Open **ตั้งค่า · Admin** on the page to edit:
 - the Model/SKU, colour, size, event, PIC and nationality lists
 - the **price book** — one line per item, `SKU (PRODUCT NAME)=price`. When staff pick a model the unit price fills itself in (the box turns blue to show it came from the book) and they can still type over it. An item missing from the book just means they type the price by hand.
 - the promotion tiers — `2=5, 3=10` means *2 pieces −5%, 3 or more −10%*. Clear it for no promo.
-- the **admin PIN**. Set one and staff can no longer open Admin (or the full export) — only the single-day download. Leave it blank and Admin is open to everyone.
+- the **owner PIN** and the **staff PINs** — see below.
 
 Your 31 SKUs, 64 colours and their prices from `The Apparel _ Booth Popups` are already loaded. Everything saves back to the **Config** tab of the Sheet, so all devices pick it up on their next refresh. You can also edit that tab directly in the Sheet — one option per line.
 
-> The PIN is a workflow lock, not security. Staff can still see every row in the ledger on the page, and the PIN is stored in the Sheet's Config tab.
+---
+
+## PINs — one per person
+
+Two kinds, both in **ตั้งค่า · Admin** and both stored in the Sheet's **Config** tab.
+
+**Owner PIN** (`adminPin`) — you. Every day, every seller, delete rows, edit settings, full export. Never remembered by the browser: you re-enter it each time, on purpose. Leave it blank and nothing is locked.
+
+**Staff PINs** (`staffPins`) — one line per seller:
+
+```
+อีฟ (ชนัญญา พูนบำเพ็ญ)=9182
+นุ่น (วรรณิกา ธาราชัย)=0331
+```
+
+What a seller gets when they sign in with their own PIN:
+
+- The device **remembers them** until someone presses **ออก** — so it is a one-time setup per PC, not a daily login.
+- **ผู้ขาย · PIC fills itself in and cannot be edited.** The server writes the name from the PIN, so a sale can only be signed by the person who made it.
+- The ledger, the สรุป summary, the totals and the day's CSV show **only their own sales, today**. No date filter, no past days, no other seller, no Admin sheet, no full export.
+- They can still undo their own just-saved order.
+
+**The separation is done in the Sheet, not in the page.** A seller's browser is never sent anyone else's rows, so it is not something that can be uncovered by poking at the page. Two caveats worth knowing: the `/exec` URL is public, so use PINs that are not guessable in a few tries — six digits rather than four is a cheap upgrade; and anyone with a valid PIN sees what that PIN is entitled to, so treat them like door keys and change one if a seller leaves.
+
+Blank the staff list and everything goes back to how it was: everyone on the link sees the same thing.
+
+> Order numbers stay shared and sequential across sellers — the Sheet assigns them — so #007 is the seventh order of the day at the booth, not the seventh of anyone's own.
 
 ---
 
@@ -103,3 +129,6 @@ The **Orders** tab, one row per item line. Columns:
 | Changed `Code.gs` but nothing changed | Apps Script keeps serving the old version | Deploy ▸ Manage deployments ▸ edit ▸ Version: **New version** ▸ Deploy |
 | Page shows the setup box again | Browser data was cleared | Paste the `/exec` URL again |
 | Staff see an old ledger | The page pulls on load, not live | Press **↻** |
+| Staff PINs don't stick after saving in Admin | The deployed script predates them | Re-paste `Code.gs`, then Deploy ▸ Manage deployments ▸ edit ▸ Version: **New version** |
+| A seller sees nothing, or yesterday's day | The script's timezone isn't Bangkok | Apps Script ▸ Project Settings ▸ Time zone = (GMT+07:00) Bangkok |
+| Someone is locked out | PIN typo, or they were removed from the list | Check the `staffPins` row in the Config tab |

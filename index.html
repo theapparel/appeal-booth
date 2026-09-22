@@ -298,6 +298,17 @@ dialog.sheet::backdrop{background:rgba(20,16,12,.38)}
   border-radius:999px;padding:4px 12px;font-size:11.5px;font-weight:500;cursor:pointer;
 }
 .queued b{font-weight:600}
+.whoami{
+  display:flex;align-items:center;gap:8px;cursor:pointer;
+  border:1px solid var(--line);background:var(--tint);color:var(--ink);
+  border-radius:999px;padding:4px 6px 4px 12px;font-size:11.5px;font-family:inherit;
+}
+.whoami b{font-weight:600;max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.whoami span{color:var(--ink-soft);border-left:1px solid var(--line);padding-left:8px;padding-right:4px}
+.whoami:hover span{color:var(--coral)}
+#signSheet::backdrop{background:rgba(20,16,12,.72)}
+.pinrow{display:flex;justify-content:space-between;gap:12px;font-size:12px;padding:5px 0;border-bottom:1px solid var(--line)}
+.pinrow:last-child{border-bottom:0}
 code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;background:var(--tint);padding:1px 5px;border-radius:4px}
 #refreshBtn{font-size:15px;line-height:1;padding:6px 10px}
 
@@ -397,6 +408,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
     <h1 class="wordmark">APPEAL <span>Summerwear</span></h1>
     <p class="sub">บันทึกการขายรายออเดอร์ · Order-by-order sales log</p>
     <div class="spacer"></div>
+    <button type="button" class="whoami" id="whoBtn" hidden title="ออกจากระบบเพื่อสลับคน"><b id="whoName"></b><span>ออก</span></button>
     <div class="status"><span class="dot" id="dot"></span><span id="statusText">กำลังเชื่อมต่อ · Connecting</span></div>
     <button type="button" class="queued" id="queuedBtn" hidden>รอส่ง <b id="queuedN">0</b> — แตะเพื่อส่งใหม่</button>
   </header>
@@ -626,6 +638,19 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
   </div>
 </dialog>
 
+<dialog class="sheet" id="signSheet">
+  <div class="sheet-hd"><h3>เข้าใช้งาน · Sign in</h3></div>
+  <div class="sheet-bd">
+    <p class="note" id="signNote">ใส่รหัสของคุณ · Enter your own PIN. เครื่องนี้จะจำไว้ให้ จนกว่าจะกด <b>ออก</b> — คุณจะเห็นเฉพาะยอดขายของตัวเองในวันนี้.</p>
+    <div class="field">
+      <label for="f-signpin">PIN</label>
+      <input type="password" id="f-signpin" inputmode="numeric" autocomplete="off" placeholder="••••">
+    </div>
+    <p class="note" id="signErr" style="color:var(--coral)"></p>
+  </div>
+  <div class="sheet-ft"><button type="button" class="btn btn-primary" id="okSign">เข้าใช้งาน · Sign in</button></div>
+</dialog>
+
 <dialog class="sheet" id="pinSheet">
   <div class="sheet-hd"><h3>ตั้งค่า · Admin</h3><div class="spacer"></div><button type="button" class="btn btn-sm" id="closePin">ปิด</button></div>
   <div class="sheet-bd">
@@ -651,8 +676,15 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
       <p class="note">ระบบจะใส่ส่วนลดให้อัตโนมัติตามจำนวนชิ้นรวมในออเดอร์ · เว้นว่าง = ไม่มีโปร</p>
     </div>
     <div class="field">
-      <label for="e-pin">รหัสผู้ดูแล · Admin PIN <span class="fmt">(เว้นว่าง = ไม่ล็อก)</span></label>
+      <label for="e-pin">รหัสเจ้าของ · Owner PIN <span class="fmt">(เว้นว่าง = ไม่ล็อก)</span></label>
       <input type="text" id="e-pin" inputmode="numeric" autocomplete="off" placeholder="เช่น 2468">
+      <p class="note">เห็นทุกวัน ทุกคน · แก้ไขและลบรายการได้ · เปิดหน้านี้ได้</p>
+    </div>
+    <div class="field">
+      <label for="e-staffpins">รหัสรายคน · Staff PINs <span class="fmt">(ชื่อ=PIN ต่อบรรทัด)</span></label>
+      <textarea id="e-staffpins" style="min-height:90px" placeholder="นุ่น (วรรณิกา ธาราชัย)=0331"></textarea>
+      <p class="note">แต่ละคนใส่รหัสของตัวเองครั้งเดียวต่อเครื่อง · ชื่อผู้ขายจะถูกใส่ให้อัตโนมัติ แก้ไม่ได้ · เห็นเฉพาะยอดของตัวเองวันนี้ ไม่เห็นของคนอื่น · เว้นว่าง = ทุกคนเห็นเหมือนกันหมด</p>
+      <p class="note" id="pinStale" style="color:var(--coral)" hidden>เซิร์ฟเวอร์ยังเป็น Code.gs เวอร์ชันเก่า — รหัสรายคนจะยังไม่ทำงานจนกว่าจะวาง Code.gs ใหม่แล้ว Deploy ▸ Manage deployments ▸ Version: New version</p>
     </div>
     <p class="note">หนึ่งบรรทัด = หนึ่งตัวเลือก · One option per line. พนักงานยังพิมพ์ค่าอื่นเองได้เสมอ.</p>
     <div class="field"><label for="e-events">Events · งาน</label><textarea id="e-events"></textarea></div>
@@ -717,6 +749,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
 
   var LS_API   = "appeal.api";
   var LS_QUEUE = "appeal.queue";
+  var LS_ME    = "appeal.me";
 
   /* ---------- defaults (used until the Sheet's Config tab answers) ---------- */
   var DEFAULTS = {
@@ -729,7 +762,10 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
     promo:  "2=5, 3=10",
     variants: "1145 (EASY RUNNING SHORTS)=Blue Beach, Grey, Black\nP118 (BEACH BOARDSHORTS)=Brick, Grey, Navy, Black, White\nBWL004 (EVERYDAY SHIRT)=Black, White, Sand\nBWL005 (HOLIDAY STRIPE SHIRT)=Blue Beach, Palm Paradise, Sandy Coasts, Triple Hill\nAPR BIKER (APR BIKER)=Pink, Navy, Black, Brown\nAPRL Polo (APRL POLO)=Navy\nASP013 (SEARCH PANTS)=Black, Muted Pink, Brown\nASP016 (UV JACKET)=Cream, White\nCSAP001 (CITY BRA)=Cream\nCSAP004 (NOW HERE BRA)=Brown\nCSAP008 (CAMP SHORTS)=Cream\nCSAP009 (SANDTONE PANTS)=Brown\nP128 (JOY VIBE SKIRT)=Midnight, White, Purple, Blue Mist\nP125 (JOY VIBE TOP)=Blue Mist, Purple, Midnight\nTime Pants (TIME PANTS)=Orange\nTrain Time Tight (TRAIN TIME TIGHT PANTS)=Wine, Blue Beach, Green\nUltra Move Capri (ULTRA MOVE CAPRI)=Iris, Forest, Black, Wine, Blue\nAC038 (BANDANA)=Alive, Blissful Blue, Ease, Golden Glow, Midnight, Reef, Beach Paradise\nCC019 (BOARDSHORTS)=White Coconut, Navy Coconut, Navy Turtle, Wave Rider, Villa Breeze, Sunny en Route, Sea เก่า, Palm เก่า\nCC026 (SUMMER BEACH SHIRT)=White Coconut, Navy Coconut, Navy Turtle, Wave Rider, Villa Breeze, Sunny en Route, Sea เก่า\nCC028 (SUMMER BEACH SHIRT)=Sun, Sky, Sea, Palm\nCC035 (BOARDSHORTS)=Sun, Sky, Sea, Palm\nAPT001 (SUMMER TEE)=Meaning, Club, Activity, The Summer Sun, Sea lobster, Quad Islands\nAPT002 (SUMMER TEE)=AP-01Sunrise, AP-02SeaSky, AP-05Palm\nAPT004 (SUMMER TEE)=CULT-01Ocean, CULT-02Sunrise, CULT-03Sunrise Ocean, CULT-04Midnight\nCC027 (SUMMER HOLIDAY DREAMS)=Sunrise Whisper, The Andaman Blue, Tropical melt, Island solitude\nCCKID019 (KIDS BOARDSHORTS)=White Coconut, Navy Coconut, Navy Turtle\nCCKID026 (KIDS SUMMER BEACH SHIRT)=White Coconut, Navy Coconut, Navy Turtle\nAC028 (ADVENTURE CAP)=Brick, Black, Grey, Navy, Cream\nAC029 (SUMMER CAP)=Good surfing, Love! This's brown, Manta, Oh! Red, Right! My blue, Sea lobster\nAC039 (SUMMER CAP)=Coastal Club",
     prices: "1145 (EASY RUNNING SHORTS)=890\nP118 (BEACH BOARDSHORTS)=890\nBWL004 (EVERYDAY SHIRT)=890\nBWL005 (HOLIDAY STRIPE SHIRT)=990\nAPR BIKER (APR BIKER)=990\nAPRL Polo (APRL POLO)=1490\nASP013 (SEARCH PANTS)=1490\nASP016 (UV JACKET)=1190\nCSAP001 (CITY BRA)=1190\nCSAP004 (NOW HERE BRA)=1190\nCSAP008 (CAMP SHORTS)=1290\nCSAP009 (SANDTONE PANTS)=1490\nP128 (JOY VIBE SKIRT)=1290\nP125 (JOY VIBE TOP)=1190\nAC038 (BANDANA)=690\nCC019 (BOARDSHORTS)=890\nCC026 (SUMMER BEACH SHIRT)=1490\nCC028 (SUMMER BEACH SHIRT)=1490\nCC035 (BOARDSHORTS)=890\nAPT001 (SUMMER TEE)=690\nAPT002 (SUMMER TEE)=690\nAPT004 (SUMMER TEE)=690\nCC027 (SUMMER HOLIDAY DREAMS)=1490\nCCKID019 (KIDS BOARDSHORTS)=690\nCCKID026 (KIDS SUMMER BEACH SHIRT)=990\nAC028 (ADVENTURE CAP)=790\nAC029 (SUMMER CAP)=690\nAC039 (SUMMER CAP)=690",
-    adminPin: ""
+    adminPin: "",
+    staffPins: "",
+    hasAdminPin: false,
+    hasStaffPins: false
   };
   var THAI   = [{v:"Thai",l:"ไทย · Thai"},{v:"Non-Thai",l:"ต่างชาติ · Non-Thai"}];
   var GENDER = [{v:"Female",l:"หญิง · F"},{v:"Male",l:"ชาย · M"},{v:"Other",l:"อื่นๆ · Other"},{v:"N/A",l:"ไม่ระบุ"}];
@@ -738,10 +774,38 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
   var lists = JSON.parse(JSON.stringify(DEFAULTS));
   var rows = [], cart = [], sel = {size:"",thai:"",gender:"",age:""};
   var discMode = "pct", discAuto = true, pendingDelete = null, view = "rows";
-  /* Staff see today only and cannot delete. The PIN unlocks the owner view for
-     this browser session; it is never persisted, so a staff phone re-locks on reload. */
-  var ownerUnlocked = false;
-  function isOwner(){ return !lists.adminPin || ownerUnlocked; }
+  /* ---------- who is at this device ----------
+     Each seller has their own PIN. Signing in remembers them on THIS device
+     until they press ออก, so it is a one-time setup per PC, not a daily login.
+     A seller sees only their own sales, today. The owner PIN sees everything
+     but is deliberately never remembered — it is re-entered each time. */
+  var me = { role:"none", name:"", pin:"" };
+  function loadMe(){
+    try{
+      var m=JSON.parse(lsGet(LS_ME)||"null");
+      if(m && m.pin){ me.pin=String(m.pin); me.name=String(m.name||""); me.role="staff"; }
+      else me={role:"none",name:"",pin:""};
+    }catch(_){ me={role:"none",name:"",pin:""}; }
+  }
+  function saveMe(){ lsSet(LS_ME, JSON.stringify({pin:me.pin, name:me.name})); }
+  function forgetMe(){
+    me={role:"none",name:"",pin:""};
+    try{ localStorage.removeItem(LS_ME); }catch(_){}
+  }
+  /* "gated" = the owner has set up PINs at all. Without them nothing changes. */
+  function gated(){ return !!(lists.hasStaffPins || lists.hasAdminPin || lists.adminPin || lists.staffPins); }
+  function isOwner(){ return !gated() || me.role==="owner"; }
+  function isStaff(){ return gated() && me.role==="staff"; }
+  function staffMap(){
+    var map={};
+    String(lists.staffPins||"").split("\n").forEach(function(line){
+      var i=line.lastIndexOf("=");
+      if(i<1) return;
+      var n=line.slice(0,i).trim(), p=line.slice(i+1).trim();
+      if(n&&p) map[p]=n;
+    });
+    return map;
+  }
   var queue = [], busy = false;
 
   var $ = function(id){ return document.getElementById(id); };
@@ -766,7 +830,11 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
      POST body goes as text/plain to avoid a CORS preflight.
      ========================================================= */
   function apiUrl(){ return API_URL || lsGet(LS_API) || ""; }
+  /* Every call carries the PIN of whoever is signed in on this device. The
+     server decides from it which rows to hand back — the page is never trusted
+     to hide them, so a staff browser simply never receives anyone else's. */
   function apiGet(params){
+    params += "&pin=" + encodeURIComponent(me.pin||"") + "&date=" + encodeURIComponent(nowLocal().date);
     var u = apiUrl() + (apiUrl().indexOf("?")<0?"?":"&") + params;
     return fetch(u, {method:"GET", redirect:"follow"}).then(function(res){
       if(!res.ok) throw new Error("HTTP "+res.status);
@@ -774,6 +842,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
     });
   }
   function apiPost(payload){
+    if(payload && !payload.pin) payload.pin = me.pin||"";
     return fetch(apiUrl(), {
       method:"POST", redirect:"follow",
       headers:{"Content-Type":"text/plain;charset=utf-8"},
@@ -814,6 +883,9 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
     else if(!silent && queue.length) toast("ยังส่งไม่ได้ · ลองใหม่เมื่อมีสัญญาณ");
   }
 
+  /* False while the deployed Apps Script is still the pre-PIN version. */
+  var serverKnowsPins = false;
+
   /* ---------- pull everything ---------- */
   async function pull(silent){
     if(!apiUrl()) return;
@@ -830,10 +902,22 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
         if(typeof data.config.promo==="string") lists.promo=data.config.promo;
         if(typeof data.config.prices==="string" && data.config.prices) lists.prices=data.config.prices;
         if(typeof data.config.variants==="string" && data.config.variants) lists.variants=data.config.variants;
-        lists.adminPin = typeof data.config.adminPin==="string" ? data.config.adminPin : "";
+        /* The PIN values come back only for the owner; everyone else gets the
+           two flags, which is all the page needs to know it must ask. */
+        lists.adminPin  = typeof data.config.adminPin==="string"  ? data.config.adminPin  : "";
+        lists.staffPins = typeof data.config.staffPins==="string" ? data.config.staffPins : "";
+        lists.hasAdminPin  = !!data.config.hasAdminPin  || !!lists.adminPin;
+        lists.hasStaffPins = !!data.config.hasStaffPins || !!lists.staffPins;
+        serverKnowsPins = typeof data.config.hasAdminPin !== "undefined";
         applyLists();
       }
+      /* The server's answer about who we are outranks anything this device thinks. */
+      if(typeof data.role==="string"){
+        if(data.role==="none"){ if(me.pin) forgetMe(); }
+        else { me.role=data.role; me.name=data.me||me.name||""; }
+      }
       setStatus("live","เชื่อมต่อแล้ว · Google Sheet");
+      updateGate();
       renderLedger(); refreshTotals();
     }catch(err){
       setStatus("local","ออฟไลน์ · ข้อมูลจะถูกเก็บไว้ก่อน");
@@ -940,6 +1024,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
     renderChips($("c-size"),lists.sizes,"size",true);
     if(!$("f-event").value && lists.events.length===1) $("f-event").value=lists.events[0];
     if(!$("f-pic").value && lists.pics.length===1) $("f-pic").value=lists.pics[0];
+    updateGate();
   }
 
   /* =========================================================
@@ -1123,10 +1208,21 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
   /* =========================================================
      Ledger
      ========================================================= */
+  function scope(list){
+    /* Belt and braces: the server already withheld everyone else's rows, but a
+       stale copy in memory must not leak either. */
+    var mine = isStaff() ? me.name : null;
+    var dt   = isOwner() ? null : nowLocal().date;
+    return list.filter(function(r){
+      if(mine && r.pic!==mine) return false;
+      if(dt && r.date!==dt) return false;
+      return true;
+    });
+  }
   function filtered(){
     var ev=$("fl-event").value;
-    var dt = isOwner() ? $("fl-date").value : nowLocal().date;
-    return rows.filter(function(r){
+    var dt = isOwner() ? $("fl-date").value : "";
+    return scope(rows).filter(function(r){
       if(ev && r.event!==ev) return false;
       if(dt && r.date!==dt) return false;
       return true;
@@ -1194,10 +1290,62 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
     $("dateFilterWrap").hidden = !owner;
     $("clearFilterWrap").hidden = !owner;
     $("todayOnly").hidden = owner;
-    $("ownerBtn").textContent = owner ? (lists.adminPin ? "ล็อก" : "เจ้าของ") : "เจ้าของ";
-    $("ownerBtn").hidden = !lists.adminPin;
-    $("openLists").hidden = !owner && !!lists.adminPin;
+    $("todayOnly").textContent = isStaff() && me.name
+      ? ("ยอดของ "+me.name+" วันนี้ · Your sales today")
+      : "ยอดขายวันนี้เท่านั้น · Today only";
+    $("ownerBtn").textContent = owner && gated() ? "ล็อก" : "เจ้าของ";
+    $("ownerBtn").hidden = !gated();
+    $("openLists").hidden = gated() && !owner;
     refreshExportLabel();
+  }
+
+  /* ---------- the doorway ---------- */
+  function updateGate(){
+    var need = gated() && me.role==="none";
+    if(need){
+      if(!$("signSheet").open){ $("signSheet").showModal(); setTimeout(function(){ $("f-signpin").focus(); },30); }
+    } else if($("signSheet").open){ $("signSheet").close(); }
+    $("whoBtn").hidden = !gated() || me.role==="none";
+    $("whoName").textContent = me.role==="owner" ? "เจ้าของ · Owner" : (me.name||"");
+    /* The seller's own name signs the sale; they cannot type someone else in. */
+    if(isStaff() && me.name){ $("f-pic").value=me.name; $("f-pic").readOnly=true; $("f-pic").title="ชื่อจากรหัสที่เข้าใช้งาน"; }
+    else { $("f-pic").readOnly=false; $("f-pic").title=""; }
+  }
+  function openSign(note){
+    $("signNote").textContent = note || "ใส่รหัสของคุณ · Enter your own PIN. เครื่องนี้จะจำไว้ให้ จนกว่าจะกด ออก — คุณจะเห็นเฉพาะยอดขายของตัวเองในวันนี้.";
+    $("signErr").textContent="";
+    $("f-signpin").value="";
+    if(!$("signSheet").open) $("signSheet").showModal();
+    setTimeout(function(){ $("f-signpin").focus(); },30);
+  }
+  /* Guess locally first so the old backend still works, then let the server rule. */
+  function localWho(pin){
+    if(lists.adminPin && pin===String(lists.adminPin)) return {role:"owner",name:""};
+    var m=staffMap();
+    if(m[pin]) return {role:"staff",name:m[pin]};
+    return {role:"none",name:""};
+  }
+  async function trySign(){
+    var v=$("f-signpin").value.trim();
+    $("signErr").textContent="";
+    if(!v){ $("signErr").textContent="ใส่รหัสก่อน · Enter your PIN"; return; }
+    var before={role:me.role,name:me.name,pin:me.pin};
+    var guess=localWho(v);
+    me.pin=v; me.role=guess.role; me.name=guess.name;
+    $("okSign").disabled=true;
+    try{ await pull(true); } finally { $("okSign").disabled=false; }
+    if(me.role==="none"){
+      /* A wrong guess must not sign out whoever was already on this device. */
+      me.role=before.role; me.name=before.name; me.pin=before.pin;
+      if(me.role==="staff" && me.pin) saveMe();
+      $("signErr").textContent="รหัสไม่ถูกต้อง · Wrong PIN";
+      $("f-signpin").select();
+      return;
+    }
+    if(me.role==="staff") saveMe();
+    $("signSheet").close(); $("f-signpin").value="";
+    toast(me.role==="owner" ? "มุมมองเจ้าของ · Owner view" : ("สวัสดี "+me.name+" · บันทึกในชื่อนี้"));
+    updateGate(); renderLedger(); refreshTotals();
   }
   function renderLedger(){
     applyMode();
@@ -1293,7 +1441,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
 
     var head={
       event:event_, date:$("f-date").value, time:$("f-time").value,
-      pic:$("f-pic").value.trim(),
+      pic: (isStaff() && me.name) ? me.name : $("f-pic").value.trim(),
       isThai:sel.thai, nationality:nationalityValue(), gender:sel.gender, age:sel.age,
       note:$("f-note").value.trim(),
       discountType:discMode, discountValue:t.discValue,
@@ -1377,13 +1525,14 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
     setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },1000);
   }
   function exportDay(){
-    var day=$("fl-date").value||nowLocal().date, ev=$("fl-event").value;
-    var list=rows.filter(function(r){ return r.date===day && (!ev||r.event===ev); });
+    var day=(isOwner()&&$("fl-date").value)||nowLocal().date, ev=$("fl-event").value;
+    var list=scope(rows).filter(function(r){ return r.date===day && (!ev||r.event===ev); });
     if(!list.length){ toast("วันที่ "+fmtDate(day)+" ยังไม่มีข้อมูล"); return; }
     download(buildCsv(list), "appeal-orders-"+day+".csv");
     toast("ดาวน์โหลดแล้ว · "+fmtDate(day));
   }
   function exportAll(){
+    if(!isOwner()){ toast("เฉพาะเจ้าของ · Owner only"); return; }
     if(!rows.length){ toast("ยังไม่มีข้อมูลให้ส่งออก"); return; }
     download(buildCsv(rows), "appeal-orders-all-"+nowLocal().date+".csv");
     toast("ดาวน์โหลดทั้งหมดแล้ว");
@@ -1418,35 +1567,29 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
   function openAdmin(){
     LKEYS.forEach(function(p){ $(p[0]).value=(lists[p[1]]||[]).join("\n"); });
     $("e-pin").value=lists.adminPin||"";
+    $("e-staffpins").value=lists.staffPins||"";
+    $("pinStale").hidden = serverKnowsPins;
     $("e-promo").value=lists.promo||"";
     $("e-prices").value=lists.prices||"";
     $("e-variants").value=lists.variants||"";
     $("allCount").textContent="ทุกงาน ทุกวัน — "+rows.length.toLocaleString()+" รายการ · backend only";
     $("listSheet").showModal();
   }
-  var pinPurpose = "admin";   /* "admin" opens the settings sheet, "owner" unlocks the full ledger */
+  /* The old single-PIN sheet now just hands over to the sign-in doorway. */
   function tryPin(){
-    if($("f-pin").value.trim()===String(lists.adminPin)){
-      $("pinSheet").close();
-      if(pinPurpose==="owner"){
-        ownerUnlocked=true; renderLedger();
-        toast("มุมมองเจ้าของ · Owner view — เห็นทุกวันและลบรายการได้");
-      } else openAdmin();
-    }
-    else { $("pinNote").textContent="รหัสไม่ถูกต้อง · Wrong PIN — ลองอีกครั้ง"; $("f-pin").select(); }
-  }
-  function askPin(purpose, note){
-    pinPurpose=purpose;
+    var v=$("f-pin").value.trim();
     $("f-pin").value="";
-    $("pinNote").textContent=note;
-    $("pinSheet").showModal();
-    setTimeout(function(){ $("f-pin").focus(); },30);
+    $("pinSheet").close();
+    openSign();
+    $("f-signpin").value=v;
+    trySign();
   }
 
   /* =========================================================
      Wiring
      ========================================================= */
   var t0=nowLocal(); $("f-date").value=t0.date; $("f-time").value=t0.time;
+  loadMe();
   applyLists();
   renderChips($("c-thai"),THAI,"thai");
   renderChips($("c-gender"),GENDER,"gender");
@@ -1533,17 +1676,28 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
   });
 
   $("openLists").addEventListener("click",function(){
-    if(lists.adminPin) askPin("admin","ใส่รหัสผู้ดูแล · Enter the admin PIN.");
-    else openAdmin();
+    if(isOwner()) openAdmin();
+    else openSign("ใส่รหัสเจ้าของเพื่อเปิดหน้าตั้งค่า · Owner PIN required");
   });
   $("ownerBtn").addEventListener("click",function(){
-    if(isOwner() && lists.adminPin){
-      ownerUnlocked=false; renderLedger();
-      toast("ล็อกแล้ว · Staff view — เห็นเฉพาะยอดวันนี้");
+    if(isOwner() && gated()){
+      /* Step back out of the owner view — to this device's own seller if it has one. */
+      loadMe();
+      pull(true).then(function(){ updateGate(); renderLedger(); });
+      toast(me.pin ? "ออกจากมุมมองเจ้าของแล้ว" : "ล็อกแล้ว · Locked");
     } else {
-      askPin("owner","ใส่รหัสเจ้าของเพื่อดูยอดย้อนหลังและแก้ไขรายการ");
+      openSign("ใส่รหัสเจ้าของเพื่อดูยอดย้อนหลังและแก้ไขรายการ · Owner PIN");
     }
   });
+  $("whoBtn").addEventListener("click",function(){
+    forgetMe();
+    pull(true).then(function(){ updateGate(); renderLedger(); });
+    openSign();
+  });
+  $("okSign").addEventListener("click",trySign);
+  $("f-signpin").addEventListener("keydown",function(e){ if(e.key==="Enter"){ e.preventDefault(); trySign(); } });
+  /* Esc must not dismiss the doorway. */
+  $("signSheet").addEventListener("cancel",function(e){ if(gated() && me.role==="none") e.preventDefault(); });
   $("okPin").addEventListener("click",tryPin);
   $("f-pin").addEventListener("keydown",function(e){ if(e.key==="Enter"){ e.preventDefault(); tryPin(); } });
   $("closePin").addEventListener("click",function(){ $("pinSheet").close(); });
@@ -1553,11 +1707,22 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
   $("saveLists").addEventListener("click",async function(){
     LKEYS.forEach(function(p){ lists[p[1]]=$(p[0]).value.split("\n").map(function(s){return s.trim();}).filter(Boolean); });
     lists.adminPin=$("e-pin").value.trim();
+    lists.staffPins=$("e-staffpins").value.trim();
+    lists.hasAdminPin=!!lists.adminPin;
+    lists.hasStaffPins=Object.keys(staffMap()).length>0;
     lists.promo=$("e-promo").value.trim();
     lists.prices=$("e-prices").value.trim();
     lists.variants=$("e-variants").value.trim();
+    var wantedPins=lists.staffPins;
     applyLists(); refreshTotals(); $("listSheet").close();
-    try{ await apiPost({action:"saveConfig", config:lists}); toast("บันทึกรายการแล้ว · Saved to the Sheet"); }
+    try{
+      await apiPost({action:"saveConfig", config:lists});
+      await pull(true);
+      /* The old Code.gs silently drops keys it has never heard of — say so. */
+      if(wantedPins && !lists.staffPins){
+        toast("บันทึกแล้ว แต่รหัสรายคนยังไม่ถูกเก็บ · ต้องอัปเดต Code.gs แล้ว deploy ใหม่");
+      } else toast("บันทึกรายการแล้ว · Saved to the Sheet");
+    }
     catch(_){ toast("บันทึกไม่สำเร็จ · ต้องมีสัญญาณอินเทอร์เน็ต"); }
   });
   $("closeCsv").addEventListener("click",function(){ $("csvSheet").close(); });
