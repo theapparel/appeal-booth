@@ -1,0 +1,8 @@
+Drag the "stock" folder below into github.com/theapparel/appeal-booth
+  (Add file  >  Upload files  >  drag  >  Commit changes)
+
+These two files are the only ones that belong on a public website.
+There are no stock numbers and no PINs in either of them.
+
+Afterwards the page is live at:
+  https://theapparel.github.io/appeal-booth/stock/
