@@ -1006,6 +1006,16 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
     return map;
   }
   function isOtherOpt(v){ return v===OTHER_OPT; }
+  /* The dropdown is sorted for the person scrolling it, not the Sheet: the
+     Config list keeps whatever order it was typed in, and anything added later
+     lands in the right place without anyone re-ordering the tab.
+     `numeric` so AC029 comes before AC038 rather than after AC1xx would, and
+     `sensitivity:"base"` so "Time Pants" sits with the letters, not after them. */
+  function sortedSkus(){
+    return (lists.models||[]).slice().sort(function(a,b){
+      return String(a).localeCompare(String(b), undefined, {numeric:true, sensitivity:"base"});
+    });
+  }
   function eventValue(){
     var v=$("f-event").value;
     return isOtherOpt(v) ? $("f-event-other").value.trim() : v.trim();
@@ -1053,7 +1063,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
   function applyLists(){
     fillSelect("f-event", lists.events, "— เลือกงาน · Event —", true);
     fillDatalist("l-pics",lists.pics);
-    fillSelect("f-model", lists.models, "— เลือกรุ่น / SKU —", true);
+    fillSelect("f-model", sortedSkus(), "— เลือกรุ่น / SKU —", true);
     refreshColors();
     var nats=lists.nats.slice();
     if(!nats.some(isOther)) nats.push("Other · อื่นๆ (ระบุ)");
