@@ -438,8 +438,8 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
           <div class="grid">
             <div class="field">
               <label for="f-event"><b>งาน / จุดขาย</b> · Event <span class="req">*</span></label>
-              <input type="text" id="f-event" list="l-events" placeholder="เช่น Central Ladprao Pop-up" required>
-              <datalist id="l-events"></datalist>
+              <select id="f-event"></select>
+              <input type="text" id="f-event-other" placeholder="พิมพ์ชื่องาน" hidden>
             </div>
             <div class="grid g3">
               <div class="field"><label for="f-date"><b>วันที่</b> · Date <span class="fmt">(วว/ดด/ปปปป)</span></label><input type="date" id="f-date" required></div>
@@ -1006,6 +1006,10 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
     return map;
   }
   function isOtherOpt(v){ return v===OTHER_OPT; }
+  function eventValue(){
+    var v=$("f-event").value;
+    return isOtherOpt(v) ? $("f-event-other").value.trim() : v.trim();
+  }
   function modelValue(){
     var v=$("f-model").value;
     return isOtherOpt(v) ? $("f-model-other").value.trim() : v.trim();
@@ -1047,7 +1051,8 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
     return list[list.length-1];
   }
   function applyLists(){
-    fillDatalist("l-events",lists.events); fillDatalist("l-pics",lists.pics);
+    fillSelect("f-event", lists.events, "— เลือกงาน · Event —", true);
+    fillDatalist("l-pics",lists.pics);
     fillSelect("f-model", lists.models, "— เลือกรุ่น / SKU —", true);
     refreshColors();
     var nats=lists.nats.slice();
@@ -1055,6 +1060,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
     fillDatalist("l-nats",nats);
     renderChips($("c-size"),lists.sizes,"size",true);
     if(!$("f-event").value) $("f-event").value=eventForToday();
+    $("f-event-other").hidden = !isOtherOpt($("f-event").value);
     if(!$("f-pic").value && lists.pics.length===1) $("f-pic").value=lists.pics[0];
     updateGate();
   }
@@ -1123,7 +1129,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
     toast(gap.msg);
   }
   function clearFlags(){
-    ["f-model","f-color","f-price","f-event"].forEach(function(id){ $(id).classList.remove("bad"); });
+    ["f-model","f-color","f-price","f-event","f-event-other","f-model-other","f-color-other"].forEach(function(id){ $(id).classList.remove("bad"); });
     $("c-size").classList.remove("bad");
   }
   function addToCart(){
@@ -1464,8 +1470,12 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
   async function saveOrder(e){
     if(e) e.preventDefault();
     if(!apiUrl()){ openSetup(); return; }
-    var event_=$("f-event").value.trim();
-    if(!event_){ flagGap({el:$("f-event"), msg:"ใส่ชื่องานก่อน · Event required"}); return; }
+    var event_=eventValue();
+    if(!event_){
+      flagGap({ el: isOtherOpt($("f-event").value) ? $("f-event-other") : $("f-event"),
+                msg:"เลือกงานก่อน · Event required" });
+      return;
+    }
     if(linePartlyFilled() && !currentLine()){ flagGap(missingOnLine()); return; }
     clearFlags();
     var t=compute();
@@ -1638,7 +1648,11 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
     if(i!==null&&i!==undefined&&i!==""){ cart.splice(+i,1); renderBasket(); refreshTotals(); }
   });
   $("f-qty").addEventListener("input",refreshTotals);
-  ["f-model","f-color","f-price","f-event","f-model-other","f-color-other"].forEach(function(id){
+  $("f-event").addEventListener("change",function(){
+    $("f-event-other").hidden = !isOtherOpt(this.value);
+    if(!isOtherOpt(this.value)) $("f-event-other").value="";
+  });
+  ["f-model","f-color","f-price","f-event","f-event-other","f-model-other","f-color-other"].forEach(function(id){
     $(id).addEventListener("input", function(){ this.classList.remove("bad"); });
     $(id).addEventListener("change", function(){ this.classList.remove("bad"); });
   });
