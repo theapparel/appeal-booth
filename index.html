@@ -1021,6 +1021,31 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
     fillSelect("f-color", only || lists.colors, only ? "— เลือกสี —" : "— เลือกสี (ทุกสี) —", true);
     $("f-color-other").hidden = !isOtherOpt($("f-color").value);
   }
+  /* Event names carry their own run — "EMP SPM 2F 24SEP-7OCT" — so the one
+     covering today can be filled in by itself. That keeps a sale from being
+     recorded against an event that finished, which is the kind of mistake
+     nobody notices until the numbers are reconciled. Anything unparseable, or
+     a day between events, falls back to the last one on the list, and staff
+     can always pick another from the dropdown. */
+  function eventForToday(){
+    var list = lists.events || [];
+    if(!list.length) return "";
+    var MON = {JAN:0,FEB:1,MAR:2,APR:3,MAY:4,JUN:5,JUL:6,AUG:7,SEP:8,OCT:9,NOV:10,DEC:11};
+    var now = new Date(); now.setHours(0,0,0,0);
+    var y = now.getFullYear();
+    for(var i=0;i<list.length;i++){
+      var m = /(\d{1,2})\s*([A-Za-z]{3})\s*[-–—]\s*(\d{1,2})\s*([A-Za-z]{3})/.exec(list[i]);
+      if(!m) continue;
+      var m1 = MON[m[2].toUpperCase()], m2 = MON[m[4].toUpperCase()];
+      if(m1===undefined || m2===undefined) continue;
+      var start = new Date(y, m1, +m[1]);
+      var end   = new Date(y, m2, +m[3]);
+      if(end < start) end.setFullYear(y+1);      /* a run crossing new year */
+      end.setHours(23,59,59,999);
+      if(now>=start && now<=end) return list[i];
+    }
+    return list[list.length-1];
+  }
   function applyLists(){
     fillDatalist("l-events",lists.events); fillDatalist("l-pics",lists.pics);
     fillSelect("f-model", lists.models, "— เลือกรุ่น / SKU —", true);
@@ -1029,7 +1054,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
     if(!nats.some(isOther)) nats.push("Other · อื่นๆ (ระบุ)");
     fillDatalist("l-nats",nats);
     renderChips($("c-size"),lists.sizes,"size",true);
-    if(!$("f-event").value && lists.events.length===1) $("f-event").value=lists.events[0];
+    if(!$("f-event").value) $("f-event").value=eventForToday();
     if(!$("f-pic").value && lists.pics.length===1) $("f-pic").value=lists.pics[0];
     updateGate();
   }
