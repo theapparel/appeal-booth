@@ -9,5 +9,7 @@
    To change a PIN: Sheet ▸ Config tab ▸ edit adminPin or staffPins
    (one line per person, "name = pin"). It applies on the next sign-in. */
 window.APPEAL_CONFIG = {
-  pinHint: "Ask Pia for your PIN \u00b7 \u0e02\u0e2d\u0e23\u0e2b\u0e31\u0e2a\u0e08\u0e32\u0e01\u0e1e\u0e35\u0e48\u0e40\u0e1b\u0e35\u0e22"
+  /* Blank hides the line under the PIN box. Put a sentence here if you ever
+     want one back. */
+  pinHint: ""
 };
