@@ -4847,7 +4847,10 @@ table.vtable tfoot td.num { text-align: right; }
   const error = document.getElementById("pinError");
   const hint = document.getElementById("pinHint");
 
+  /* No hint set means no line at all, rather than an empty paragraph still
+     taking up its margin. */
   if (CFG.pinHint) hint.textContent = CFG.pinHint;
+  else hint.hidden = true;
 
   function ls(k, fallback) {
     try { const v = localStorage.getItem(k); return v === null ? fallback : v; }
