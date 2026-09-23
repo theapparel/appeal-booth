@@ -1886,6 +1886,8 @@ table.vtable tfoot td.num { text-align: right; }
       movesHint: "Every in and out, newest first. Undo writes the opposite line \u2014 nothing is erased.",
       movesBtn: "Movements",
       movesEmpty: "No movements yet. The numbers are still the opening count.",
+      movesMine: "Today only, and only the lines you recorded yourself.",
+      movesEmptyToday: "Nothing recorded today.",
       undo: "Undo",
       undone: "Reversed",
       pullOrders: "Pull sales from the order log",
@@ -2086,6 +2088,8 @@ table.vtable tfoot td.num { text-align: right; }
       movesHint: "ทุกการเข้าออก ล่าสุดอยู่บนสุด ยกเลิกคือบันทึกรายการกลับทาง ไม่มีการลบ",
       movesBtn: "ประวัติ",
       movesEmpty: "ยังไม่มีการเคลื่อนไหว ตัวเลขยังเป็นยอดนับตอนเปิดร้าน",
+      movesMine: "เฉพาะรายการที่คุณบันทึกเอง เฉพาะวันนี้",
+      movesEmptyToday: "วันนี้คุณยังไม่ได้บันทึกรายการ",
       undo: "ยกเลิก",
       undone: "ยกเลิกแล้ว",
       pullOrders: "ดึงยอดขายจากออเดอร์",
@@ -4513,7 +4517,16 @@ table.vtable tfoot td.num { text-align: right; }
     }
     callApi("movements", { limit: 200 }).then(function (res) {
       const rows = res.movements || [];
-      if (!rows.length) { empty.hidden = false; empty.textContent = t("movesEmpty"); return; }
+      /* The sheet decides what this PIN may see and says so in res.scope. Say it
+         on screen too, so a short list reads as "today" and not as "the taps
+         did not save". */
+      const mine = res.scope === "mine-today";
+      document.getElementById("movesHint").textContent = mine ? t("movesMine") : t("movesHint");
+      if (!rows.length) {
+        empty.hidden = false;
+        empty.textContent = mine ? t("movesEmptyToday") : t("movesEmpty");
+        return;
+      }
       rows.forEach(function (m) { list.appendChild(movementItem(m)); });
     }).catch(function () {
       empty.hidden = false;
