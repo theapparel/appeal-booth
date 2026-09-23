@@ -86,8 +86,8 @@ Two kinds, both in **ตั้งค่า · Admin** and both stored in the She
 **Staff PINs** (`staffPins`) — one line per seller:
 
 ```
-อีฟ (ชนัญญา พูนบำเพ็ญ)=9182
-นุ่น (วรรณิกา ธาราชัย)=0331
+ชื่อที่จะขึ้นในบิล=รหัส 6 หลัก
+อีกคน=รหัสของเขาเอง
 ```
 
 What a seller gets when they sign in with their own PIN:
