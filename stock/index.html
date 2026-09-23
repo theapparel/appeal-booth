@@ -1740,7 +1740,7 @@ table.vtable tfoot td.num { text-align: right; }
   const CONFIG = {
     lowAt: 1,               // on hand at or below this => "Low stock" (the last piece)
     lowStockThreshold: 5,   // kept for the old rule; unused
-    defaultLang: "en",      // "en" or "th"
+    defaultLang: "th",      // "en" or "th" — staff read Thai, so that is the default
     dataUrl: (window.APPEAL_CONFIG && window.APPEAL_CONFIG.dataUrl) || "data/stock.csv",
     eventUrl: (window.APPEAL_CONFIG && window.APPEAL_CONFIG.eventUrl) || "data/event.json",
     currency: "THB",
@@ -1870,8 +1870,15 @@ table.vtable tfoot td.num { text-align: right; }
       reasonSold: "Taken out (no order)",
       reasonAdd: "Stock in",
       reasonCount: "Recount",
+      /* How each reason reads back in the ledger — short, because it sits on one
+         line beside the name and the note. */
+      logSold: "sold",
+      logOut: "taken out",
+      logAdd: "stock in",
+      logCount: "recount",
+      logUndo: "undone",
       howMany: "How many",
-      whoBy: "Who (optional)",
+      whoBy: "Recorded by (from your PIN)",
       noteLabel: "Note (optional)",
       saveMove: "Save",
       nothingLeft: "Nothing left on this line",
@@ -2065,8 +2072,13 @@ table.vtable tfoot td.num { text-align: right; }
       reasonSold: "ตัดออก (ไม่ได้ขายผ่านหน้าขาย)",
       reasonAdd: "รับของเพิ่ม",
       reasonCount: "นับใหม่",
+      logSold: "ขายแล้ว",
+      logOut: "ตัดออก",
+      logAdd: "รับเข้า",
+      logCount: "นับใหม่",
+      logUndo: "ยกเลิกแล้ว",
       howMany: "จำนวน",
-      whoBy: "ผู้บันทึก (ไม่บังคับ)",
+      whoBy: "ผู้บันทึก (มาจาก PIN)",
       noteLabel: "หมายเหตุ (ไม่บังคับ)",
       saveMove: "บันทึก",
       nothingLeft: "รายการนี้หมดแล้ว",
@@ -2177,7 +2189,17 @@ table.vtable tfoot td.num { text-align: right; }
     "8-9Y": "8–9 ปี"
   };
 
-  let lang = CONFIG.defaultLang;
+  /* Remember the language per device. Without this a staff member has to tap
+     ไทย every morning, because the unlock expires at midnight and the page
+     reloads fresh. */
+  const LS_LANG = "appeal-stock-lang";
+  let lang = (function () {
+    try {
+      const saved = localStorage.getItem(LS_LANG);
+      if (saved === "en" || saved === "th") return saved;
+    } catch (e) { /* private window — fall back to the default */ }
+    return CONFIG.defaultLang;
+  })();
 
   function t(key) {
     const d = I18N[lang] || I18N.en;
@@ -3916,6 +3938,7 @@ table.vtable tfoot td.num { text-align: right; }
   function setLang(next) {
     if (lang === next) return;
     lang = next;
+    try { localStorage.setItem(LS_LANG, next); } catch (e) {}
     buildFormatters();
     // Status labels are cached on the item objects, so refresh them
     state.items.forEach(function (i) {
@@ -4498,6 +4521,16 @@ table.vtable tfoot td.num { text-align: right; }
     });
   }
 
+  /* The sheet stores the reason as a plain code — sold, out, add, count, undo.
+     Show it in the language the page is in, and fall back to the code itself if
+     a reason ever turns up that is not one of those. */
+  const LOG_REASON = { sold: "logSold", out: "logOut", add: "logAdd",
+                       count: "logCount", undo: "logUndo" };
+  function reasonLabel(r) {
+    const key = LOG_REASON[String(r || "").toLowerCase()];
+    return key ? t(key) : String(r || "");
+  }
+
   function movementItem(m) {
     const li = document.createElement("li");
 
@@ -4514,7 +4547,7 @@ table.vtable tfoot td.num { text-align: right; }
       " · " + dSize(m.size) + " · " + (rec ? dColor(m.color_en, rec.colorTh) : m.color_en);
     const meta = document.createElement("span");
     meta.className = "meta";
-    meta.textContent = [m.reason, m.by, m.note].filter(Boolean).join(" · ");
+    meta.textContent = [reasonLabel(m.reason), m.by, m.note].filter(Boolean).join(" · ");
     what.appendChild(meta);
 
     const delta = document.createElement("span");
@@ -4906,6 +4939,15 @@ table.vtable tfoot td.num { text-align: right; }
     signin(url, pin).then(function (data) {
       if (!data || data.ok !== true) {
         fail("Wrong PIN — try again · รหัสไม่ถูกต้อง");
+        return;
+      }
+      /* "ok" on its own is not proof the PIN was checked. Apps Script answers a
+         POST with a redirect the browser re-issues as a GET, and if the body is
+         lost on the way, what comes back is a generic reply that also says ok.
+         Only a real sign-in carries a role, so that is what we insist on —
+         otherwise the page would open for anybody. */
+      if (!data.role) {
+        fail("Could not sign in — try once more · เข้าไม่ได้ ลองอีกครั้ง");
         return;
       }
       try { localStorage.setItem(LS_API, url); } catch (err) {}
