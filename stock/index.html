@@ -126,15 +126,27 @@ h1, h2, h3 { margin: 0; font-weight: 600; letter-spacing: -0.01em; }
   font-size: 12px; color: var(--color-muted);
   border: 1px dashed var(--color-border); border-radius: 999px; padding: 4px 10px;
 }
-/* Who is signed in — every movement is filed under this name. */
+/* Who is signed in — every movement is filed under this name — and the way to
+   hand the phone to the next person, in one pill, as on the order page. */
 .who-badge {
-  font-size: 12px; color: var(--color-text);
+  display: inline-flex; align-items: center; gap: 8px;
+  font: inherit; font-size: 12px; color: var(--color-text);
   background: var(--color-surface); border: 1px solid var(--color-border);
-  border-radius: 999px; padding: 4px 10px;
+  border-radius: 999px; padding: 4px 6px 4px 12px;
+  cursor: pointer;
 }
 .who-badge[hidden] { display: none !important; }
-.who-badge b { font-weight: 500; }
+.who-badge b {
+  font-weight: 500; max-width: 190px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
 .who-badge .who-role { color: var(--color-accent); font-weight: 500; }
+.who-badge .who-out {
+  color: var(--color-muted);
+  border-left: 1px solid var(--color-border);
+  padding: 0 4px 0 8px;
+}
+.who-badge:hover .who-out { color: var(--color-accent); }
 
 /* ---- movements + adjust panels ---- */
 .moves-list { list-style: none; margin: 0; padding: 0; }
@@ -1424,7 +1436,6 @@ table.vtable tfoot td.num { text-align: right; }
     <p class="gate-error" id="pinError" role="alert" hidden>Wrong PIN — try again · รหัสไม่ถูกต้อง</p>
     <button class="btn btn--primary gate-btn" type="submit" id="gateBtn">Open · เข้าใช้งาน</button>
     <p class="gate-foot" id="pinHint"></p>
-    <p class="gate-foot">Stays open until midnight · เปิดค้างไว้ถึงเที่ยงคืน</p>
   </form>
 </div>
 
@@ -1442,11 +1453,10 @@ table.vtable tfoot td.num { text-align: right; }
       <span class="auto-badge" id="autoBadge" hidden></span>
       <span class="queue-badge" id="queueBadge" hidden></span>
       <span class="readonly-badge" id="readonlyBadge" hidden></span>
-      <span class="who-badge" id="whoBadge" hidden></span>
+      <button class="who-badge" type="button" id="whoBadge" hidden><b id="whoName"></b><span class="who-out" id="lockBtnText">Sign out</span></button>
       <button class="lock-btn" type="button" id="syncBtn" title="Pull sales from the order log" data-title-key="pullOrders"><span id="syncBtnText">Pull sales</span></button>
       <button class="lock-btn" type="button" id="movesBtn"><span id="movesBtnText">Movements</span></button>
       <button class="lock-btn" type="button" id="refreshBtn" aria-label="Refresh"><span aria-hidden="true">↻</span> <span id="refreshBtnText">Refresh</span></button>
-      <button class="lock-btn" type="button" id="lockBtn" title="Lock this device" aria-label="Lock"><span aria-hidden="true">←</span> <span id="lockBtnText">Lock</span></button>
       <div class="seg seg--lang" role="group" id="langGroup" aria-label="Language">
         <button type="button" id="langEn" aria-pressed="true" lang="en">EN</button>
         <button type="button" id="langTh" aria-pressed="false" lang="th">ไทย</button>
@@ -1757,7 +1767,7 @@ table.vtable tfoot td.num { text-align: right; }
       appTitle: "Inventory Check",
       tagline: "One row per item \u2014 tap it to see the size and colour breakdown, or switch to All rows for every line.",
       syncLabel: "Last sync",
-      lockBtn: "Lock",
+      lockBtn: "Sign out",
       summaryHeading: "Inventory summary",
       filtersHeading: "Filter inventory",
       resultsHeading: "Inventory results",
@@ -1943,7 +1953,7 @@ table.vtable tfoot td.num { text-align: right; }
       appTitle: "\u0e15\u0e23\u0e27\u0e08\u0e2a\u0e15\u0e4a\u0e2d\u0e01\u0e2a\u0e34\u0e19\u0e04\u0e49\u0e32",
       tagline: "หนึ่งแถวต่อหนึ่งสินค้า — แตะเพื่อดูรายละเอียดไซส์และสี หรือสลับไปที่ “แสดงทุกแถว” เพื่อดูทุกบรรทัด",
       syncLabel: "\u0e2d\u0e31\u0e1b\u0e40\u0e14\u0e15\u0e25\u0e48\u0e32\u0e2a\u0e38\u0e14",
-      lockBtn: "\u0e25\u0e47\u0e2d\u0e01",
+      lockBtn: "\u0e2d\u0e2d\u0e01",
       summaryHeading: "\u0e2a\u0e23\u0e38\u0e1b\u0e2a\u0e15\u0e4a\u0e2d\u0e01",
       filtersHeading: "\u0e15\u0e31\u0e27\u0e01\u0e23\u0e2d\u0e07\u0e2a\u0e15\u0e4a\u0e2d\u0e01",
       resultsHeading: "\u0e23\u0e32\u0e22\u0e01\u0e32\u0e23\u0e2a\u0e15\u0e4a\u0e2d\u0e01",
@@ -4271,17 +4281,18 @@ table.vtable tfoot td.num { text-align: right; }
   function renderWho() {
     const el = document.getElementById("whoBadge");
     if (!el) return;
+    const name = document.getElementById("whoName");
     if (!Stock.by) { el.hidden = true; return; }
     el.hidden = false;
-    el.innerHTML = "";
-    const b = document.createElement("b");
-    b.textContent = Stock.by;
-    el.appendChild(b);
+    /* Only the name half is rewritten — the divider and the way out are part of
+       the pill's own markup and have to survive a re-render. */
+    name.innerHTML = "";
+    name.appendChild(document.createTextNode(Stock.by));
     if (Stock.role === "owner") {
       const r = document.createElement("span");
       r.className = "who-role";
       r.textContent = " · " + t("roleOwner");
-      el.appendChild(r);
+      name.appendChild(r);
     }
     el.title = t("whoTitle");
   }
@@ -4851,6 +4862,7 @@ table.vtable tfoot td.num { text-align: right; }
   const CFG = window.APPEAL_CONFIG || {};
   const KEY = "appeal-booth-stock-unlocked";
   const LS_API = "appeal-stock-api";
+  const EXEC_RE = /^https:\/\/script\.google\.com\/.+\/exec$/;
   const gate = document.getElementById("pinGate");
   const form = document.getElementById("pinForm");
   const input = document.getElementById("pinInput");
@@ -4913,6 +4925,32 @@ table.vtable tfoot td.num { text-align: right; }
     });
   }
 
+  /* A connection link carries the sheet address in the fragment: browsers never
+     send a fragment to the server, so it is not in any web log, and GitHub never
+     sees it either. Take it once, keep it on this device, then wipe it from the
+     address bar so it cannot be read off a screenshot or walked back to with the
+     back button. A later link overwrites the old one, which is how a phone
+     follows a new deployment. */
+  function claimLink() {
+    const m = (location.hash || "").match(/[#&]k=([^&]*)/);
+    if (!m) return false;
+    let url = "";
+    try { url = decodeURIComponent(m[1]); } catch (e) { return false; }
+    if (!EXEC_RE.test(url)) return false;
+    try { localStorage.setItem(LS_API, url); } catch (e) {}
+    try { history.replaceState(null, "", location.pathname + location.search); }
+    catch (e) { location.hash = ""; }
+    return true;
+  }
+  claimLink();
+
+  /* Tapping the link while the page is already open changes only the fragment,
+     which the browser treats as staying on the same page — no reload, so nothing
+     above would have run. Catch that and start again on the new address. */
+  window.addEventListener("hashchange", function () {
+    if (claimLink()) location.reload();
+  });
+
   const already = saved();
   if (already) { open(already); return; }
 
@@ -4941,7 +4979,7 @@ table.vtable tfoot td.num { text-align: right; }
       link.focus();
       return;
     }
-    if (!/^https:\/\/script\.google\.com\/.+\/exec$/.test(url)) {
+    if (!EXEC_RE.test(url)) {
       error.hidden = false;
       error.textContent = "That link does not look right · ลิงก์ไม่ถูกต้อง";
       link.focus();
@@ -4976,7 +5014,7 @@ table.vtable tfoot td.num { text-align: right; }
     });
   });
 
-  const lock = document.getElementById("lockBtn");
+  const lock = document.getElementById("whoBadge");
   if (lock) {
     lock.addEventListener("click", function () {
       try { localStorage.removeItem(KEY); } catch (err) {}
