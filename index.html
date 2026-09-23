@@ -682,7 +682,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
     </div>
     <div class="field">
       <label for="e-staffpins">รหัสรายคน · Staff PINs <span class="fmt">(ชื่อ=PIN ต่อบรรทัด)</span></label>
-      <textarea id="e-staffpins" style="min-height:90px" placeholder="นุ่น (วรรณิกา ธาราชัย)=0331"></textarea>
+      <textarea id="e-staffpins" style="min-height:90px" placeholder="ชื่อพนักงาน=รหัส"></textarea>
       <p class="note">แต่ละคนใส่รหัสของตัวเองครั้งเดียวต่อเครื่อง · ชื่อผู้ขายจะถูกใส่ให้อัตโนมัติ แก้ไม่ได้ · เห็นเฉพาะยอดของตัวเองวันนี้ ไม่เห็นของคนอื่น · เว้นว่าง = ทุกคนเห็นเหมือนกันหมด</p>
       <p class="note" id="pinStale" style="color:var(--coral)" hidden>เซิร์ฟเวอร์ยังเป็น Code.gs เวอร์ชันเก่า — รหัสรายคนจะยังไม่ทำงานจนกว่าจะวาง Code.gs ใหม่แล้ว Deploy ▸ Manage deployments ▸ Version: New version</p>
     </div>
@@ -754,7 +754,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
   /* ---------- defaults (used until the Sheet's Config tab answers) ---------- */
   var DEFAULTS = {
     events: ["EMP SPM 2F 10SEP-23SEP"],
-    pics:   ["นุ่น (วรรณิกา ธาราชัย)"],
+    pics:   ["อีฟ (ชนัญญา พูนบำเพ็ญ)"],
     models: ["1145 (EASY RUNNING SHORTS)","P118 (BEACH BOARDSHORTS)","BWL004 (EVERYDAY SHIRT)","BWL005 (HOLIDAY STRIPE SHIRT)","APR BIKER (APR BIKER)","APRL Polo (APRL POLO)","ASP013 (SEARCH PANTS)","ASP016 (UV JACKET)","CSAP001 (CITY BRA)","CSAP004 (NOW HERE BRA)","CSAP008 (CAMP SHORTS)","CSAP009 (SANDTONE PANTS)","P128 (JOY VIBE SKIRT)","P125 (JOY VIBE TOP)","Time Pants (TIME PANTS)","Train Time Tight (TRAIN TIME TIGHT PANTS)","Ultra Move Capri (ULTRA MOVE CAPRI)","AC038 (BANDANA)","CC019 (BOARDSHORTS)","CC026 (SUMMER BEACH SHIRT)","CC028 (SUMMER BEACH SHIRT)","CC035 (BOARDSHORTS)","APT001 (SUMMER TEE)","APT002 (SUMMER TEE)","APT004 (SUMMER TEE)","CC027 (SUMMER HOLIDAY DREAMS)","CCKID019 (KIDS BOARDSHORTS)","CCKID026 (KIDS SUMMER BEACH SHIRT)","AC028 (ADVENTURE CAP)","AC029 (SUMMER CAP)","AC039 (SUMMER CAP)"],
     colors: ["Blue Beach","Grey","Black","Brick","Navy","White","Sand","Palm Paradise","Sandy Coasts","Triple Hill","Pink","Brown","Muted Pink","Cream","Midnight","Purple","Blue Mist","Orange","Wine","Green","Iris","Forest","Blue","Alive","Blissful Blue","Ease","Golden Glow","Reef","Beach Paradise","White Coconut","Navy Coconut","Navy Turtle","Wave Rider","Villa Breeze","Sunny en Route","Sea เก่า","Palm เก่า","Sun","Sky","Meaning","Club","Activity","The Summer Sun","Sea lobster","Quad Islands","AP-01Sunrise","AP-02SeaSky","AP-05Palm","CULT-01Ocean","CULT-02Sunrise","CULT-03Sunrise Ocean","CULT-04Midnight","Sunrise Whisper","The Andaman Blue","Tropical melt","Island solitude","Good surfing","Love! This's brown","Manta","Oh! Red","Right! My blue","Coastal Club","Sea","Palm"],
     sizes:  ["XS","S","M","L","XL","XXL","Free size"],
