@@ -4425,7 +4425,8 @@ table.vtable tfoot td.num { text-align: right; }
     });
   }
 
-  /* Drop the unlock and go back to the PIN box. */
+  /* Back to the PIN box. Nothing is stored, so this is only a reload — the
+     removeItem is for devices carrying an unlock from before that changed. */
   function relock() {
     try { localStorage.removeItem("appeal-booth-stock-unlocked"); } catch (e) {}
     setTimeout(function () { location.reload(); }, 1200);
@@ -5253,28 +5254,16 @@ table.vtable tfoot td.num { text-align: right; }
     catch (e) { return fallback; }
   }
 
-  /* Midnight in Bangkok, worked out from UTC so a phone set to the wrong
-     time zone still expires when the booth actually closes. Thailand has
-     no daylight saving, so +7 is always +7. */
-  function bangkokMidnight() {
-    const bkk = new Date(Date.now() + 7 * 3600000);
-    return Date.UTC(bkk.getUTCFullYear(), bkk.getUTCMonth(), bkk.getUTCDate() + 1)
-           - 7 * 3600000;
-  }
-
-  function saved() {
-    try {
-      const raw = localStorage.getItem(KEY);
-      if (!raw) return null;
-      const s = JSON.parse(raw);
-      if (!s || !s.pin || !(s.exp > Date.now())) return null;
-      return s;
-    } catch (err) { return null; }
-  }
-
-  function remember(s) {
-    try { localStorage.setItem(KEY, JSON.stringify(s)); }
-    catch (err) { /* private window — they will type it again, that is all */ }
+  /* The unlock is not kept anywhere. Opening the page asks for the PIN, every
+     time, on every device — which is the point of this design, not an oversight:
+     the settings panel now shows every PIN to whoever is signed in as the owner,
+     so a phone left unlocked on the counter must not already be signed in.
+     The PIN lives in memory for the life of the page (window.APPEAL_SESSION)
+     and dies with it. Anything that used to be stored under KEY is cleared on
+     the way past, so a device that was unlocked before this change does not
+     stay unlocked. */
+  function forgetOldUnlock() {
+    try { localStorage.removeItem(KEY); } catch (err) {}
   }
 
   function open(s) {
@@ -5322,8 +5311,7 @@ table.vtable tfoot td.num { text-align: right; }
     if (claimLink()) location.reload();
   });
 
-  const already = saved();
-  if (already) { open(already); return; }
+  forgetOldUnlock();
 
   /* The address ships with the page, so the plain link works on any phone and
      the only thing ever asked for is a PIN. A connection link still overrides
@@ -5378,10 +5366,7 @@ table.vtable tfoot td.num { text-align: right; }
         return;
       }
       try { localStorage.setItem(LS_API, url); } catch (err) {}
-      const s = { pin: pin, name: data.name || "", role: data.role || "staff",
-                  exp: bangkokMidnight() };
-      remember(s);
-      open(s);
+      open({ pin: pin, name: data.name || "", role: data.role || "staff" });
     }).catch(function () {
       fail("Cannot reach the sheet — check the signal · ต่อชีตไม่ได้ เช็กอินเทอร์เน็ต");
     });
@@ -5390,7 +5375,7 @@ table.vtable tfoot td.num { text-align: right; }
   const lock = document.getElementById("whoBadge");
   if (lock) {
     lock.addEventListener("click", function () {
-      try { localStorage.removeItem(KEY); } catch (err) {}
+      forgetOldUnlock();
       location.reload();
     });
   }
