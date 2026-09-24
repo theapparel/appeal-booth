@@ -267,24 +267,71 @@ h1, h2, h3 { margin: 0; font-weight: 600; letter-spacing: -0.01em; }
 /* ============================================================
    HEADER
    ============================================================ */
+/* The masthead is shared with the booth order log, on purpose: same wordmark,
+   same subtitle shape, same signed-in pill, same connection dot. Its colours
+   are scoped here rather than taken from the page's tokens, so the two pages
+   agree on the brand without restyling everything below. */
 .masthead {
+  --head-ink: #000000;
+  --head-soft: #6E6660;
+  --head-faint: #9C958E;
+  --head-line: #E2DBD3;
+  --head-tint: #F6F4F1;
+  --head-coral: #EC5E3B;
+  --head-sea: #5280A9;
+
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: var(--space-4);
-  padding-bottom: var(--space-5);
-  border-bottom: 1px solid var(--color-border);
+  align-items: baseline;
+  gap: 10px 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--head-line);
 }
 
-.masthead h1 { font-size: 26px; line-height: 1.2; }
-
-.masthead p {
-  margin: var(--space-2) 0 0;
-  color: var(--color-muted);
-  font-size: 13px;
-  max-width: 62ch;
+.wordmark {
+  margin: 0;
+  font-size: 20px; font-weight: 600; letter-spacing: 0.14em;
+  white-space: nowrap; color: var(--head-ink);
 }
+.wordmark span { font-weight: 300; letter-spacing: 0.06em; color: var(--head-soft); }
+
+.masthead .sub { margin: 0; font-size: 12.5px; color: var(--head-soft); }
+.masthead .spacer { flex: 1 1 auto; }
+
+.conn {
+  display: inline-flex; align-items: center; gap: 7px; margin: 0;
+  font-size: 11px; letter-spacing: 0.07em; text-transform: uppercase;
+  color: var(--head-soft);
+}
+.conn .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--head-faint); flex: none; }
+.conn .dot.live { background: var(--head-sea); }
+.conn .dot.local { background: var(--head-coral); }
+
+/* The pill, matched to the order log's. Scoped to the masthead so the rule
+   below it still dresses the same button anywhere else it is used. */
+.masthead .who-badge {
+  display: flex; align-items: center; gap: 8px; cursor: pointer;
+  border: 1px solid var(--head-line); background: var(--head-tint); color: var(--head-ink);
+  border-radius: 999px; padding: 4px 6px 4px 12px; font-size: 11.5px; font-family: inherit;
+}
+.masthead .who-badge b {
+  font-weight: 600; max-width: 190px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.masthead .who-badge .who-out {
+  color: var(--head-soft); border-left: 1px solid var(--head-line);
+  padding-left: 8px; padding-right: 4px;
+}
+.masthead .who-badge .who-role { color: var(--head-soft); font-weight: 400; }
+.masthead .who-badge:hover .who-out { color: var(--head-coral); }
+
+/* Everything this page can do, on its own row under the masthead. */
+.headbar {
+  display: flex; flex-wrap: wrap; align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-4) 0 var(--space-5);
+}
+.headbar .spacer { flex: 1 1 auto; }
 
 .sync {
   display: inline-flex;
@@ -300,7 +347,6 @@ h1, h2, h3 { margin: 0; font-weight: 600; letter-spacing: -0.01em; }
 
 .sync .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--color-accent); flex: none; }
 
-.head-actions { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
 
 /* The picker is the badge with a list behind it, so switching events does not
    add another control to a header that is already busy. */
@@ -1095,11 +1141,13 @@ table.vtable tfoot td.num { text-align: right; }
 
 @media (max-width: 760px) {
   .page { padding: var(--space-4) var(--space-4) var(--space-7); }
-  .masthead { padding-bottom: var(--space-3); gap: var(--space-2); }
-  .masthead h1 { font-size: 20px; }
-  #tagline { display: none; }
-  .head-actions { gap: var(--space-2); width: 100%; }
-  .head-actions .sync, .event-badge { font-size: 11px; padding: 5px 8px; }
+  .masthead { padding-bottom: 11px; gap: 6px 12px; }
+  .wordmark { font-size: 17px; letter-spacing: 0.1em; }
+  /* The page name drops to its own line rather than being cut, exactly as it
+     does on the order log at this width. */
+  .masthead .sub { font-size: 11.5px; flex: 1 1 100%; order: 3; }
+  .headbar { gap: var(--space-2); padding: var(--space-3) 0 var(--space-4); }
+  .headbar .sync, .event-badge { font-size: 11px; padding: 5px 8px; }
   .seg--lang button { min-width: 40px; height: 28px; }
 
   /* Search, filters and the status chips stay pinned to the top */
@@ -1422,7 +1470,7 @@ table.vtable tfoot td.num { text-align: right; }
 }
 
 @media print {
-  .toolbar, .seg, .results-bar .btn, .to-top, .toast, .head-actions .seg,
+  .toolbar, .seg, .results-bar .btn, .to-top, .toast, .headbar .lock-btn,
   .search-wrap, .hint-line, #expandAllBtn, #copyBtn { display: none !important; }
   .page { padding: 0; max-width: none; }
   .table-wrap { border: 0; overflow: visible; }
@@ -1463,29 +1511,35 @@ table.vtable tfoot td.num { text-align: right; }
 <div class="page">
 
   <!-- 1. HEADER -->
+  <!-- The same strip as the booth order log: who we are, which page this is,
+       who is signed in, and whether the sheet is reachable. The subtitle is
+       bilingual and fixed, like the order log's — the language toggle below
+       governs the working part of the page, not the brand line. -->
   <header class="masthead">
-    <div>
-      <h1 id="appTitle">Inventory Check</h1>
-      <p id="tagline">Stock position by event across counter locations.</p>
-    </div>
-    <div class="head-actions">
-      <p class="event-badge" id="eventBadge" hidden></p>
-      <select class="event-badge event-pick" id="eventPick" hidden aria-label="Event"></select>
-      <p class="sync"><span class="dot" aria-hidden="true"></span> <span id="syncLabel">Last sync</span> <span id="lastSync">—</span></p>
-      <span class="auto-badge" id="autoBadge" hidden></span>
-      <span class="queue-badge" id="queueBadge" hidden></span>
-      <span class="readonly-badge" id="readonlyBadge" hidden></span>
-      <button class="who-badge" type="button" id="whoBadge" hidden><b id="whoName"></b><span class="who-out" id="lockBtnText">Sign out</span></button>
-      <button class="lock-btn" type="button" id="syncBtn" title="Pull sales from the order log" data-title-key="pullOrders"><span id="syncBtnText">Pull sales</span></button>
-      <button class="lock-btn" type="button" id="movesBtn"><span id="movesBtnText">Movements</span></button>
-      <button class="lock-btn" type="button" id="adminBtn" hidden><span id="adminBtnText">Settings</span></button>
-      <button class="lock-btn" type="button" id="refreshBtn" aria-label="Refresh"><span aria-hidden="true">↻</span> <span id="refreshBtnText">Refresh</span></button>
-      <div class="seg seg--lang" role="group" id="langGroup" aria-label="Language">
-        <button type="button" id="langEn" aria-pressed="true" lang="en">EN</button>
-        <button type="button" id="langTh" aria-pressed="false" lang="th">ไทย</button>
-      </div>
-    </div>
+    <h1 class="wordmark">APPEAL <span>Summerwear</span></h1>
+    <p class="sub">ตรวจสต๊อกหน้าร้าน · Booth stock check</p>
+    <div class="spacer"></div>
+    <button class="who-badge" type="button" id="whoBadge" hidden><b id="whoName"></b><span class="who-out" id="lockBtnText">Sign out</span></button>
+    <p class="conn"><span class="dot" id="connDot" aria-hidden="true"></span><span id="connText">Google Sheet</span></p>
   </header>
+
+  <div class="headbar">
+    <p class="event-badge" id="eventBadge" hidden></p>
+    <select class="event-badge event-pick" id="eventPick" hidden aria-label="Event"></select>
+    <p class="sync"><span class="dot" aria-hidden="true"></span> <span id="syncLabel">Last sync</span> <span id="lastSync">—</span></p>
+    <span class="auto-badge" id="autoBadge" hidden></span>
+    <span class="queue-badge" id="queueBadge" hidden></span>
+    <span class="readonly-badge" id="readonlyBadge" hidden></span>
+    <div class="spacer"></div>
+    <button class="lock-btn" type="button" id="syncBtn" title="Pull sales from the order log" data-title-key="pullOrders"><span id="syncBtnText">Pull sales</span></button>
+    <button class="lock-btn" type="button" id="movesBtn"><span id="movesBtnText">Movements</span></button>
+    <button class="lock-btn" type="button" id="adminBtn" hidden><span id="adminBtnText">Settings</span></button>
+    <button class="lock-btn" type="button" id="refreshBtn" aria-label="Refresh"><span aria-hidden="true">↻</span> <span id="refreshBtnText">Refresh</span></button>
+    <div class="seg seg--lang" role="group" id="langGroup" aria-label="Language">
+      <button type="button" id="langEn" aria-pressed="true" lang="en">EN</button>
+      <button type="button" id="langTh" aria-pressed="false" lang="th">ไทย</button>
+    </div>
+  </div>
 
   <div class="controls">
 
@@ -1827,6 +1881,8 @@ table.vtable tfoot td.num { text-align: right; }
       locale: "en-GB",
       appTitle: "Inventory Check",
       tagline: "One row per item \u2014 tap it to see the size and colour breakdown, or switch to All rows for every line.",
+      connLive: "\u0e40\u0e0a\u0e37\u0e48\u0e2d\u0e21\u0e15\u0e48\u0e2d\u0e41\u0e25\u0e49\u0e27 \u00b7 Google Sheet",
+      connLocal: "\u0e22\u0e31\u0e07\u0e44\u0e21\u0e48\u0e40\u0e0a\u0e37\u0e48\u0e2d\u0e21\u0e15\u0e48\u0e2d \u00b7 Not connected",
       syncLabel: "Last sync",
       lockBtn: "Sign out",
       summaryHeading: "Inventory summary",
@@ -2026,6 +2082,8 @@ table.vtable tfoot td.num { text-align: right; }
       locale: "th-TH",
       appTitle: "\u0e15\u0e23\u0e27\u0e08\u0e2a\u0e15\u0e4a\u0e2d\u0e01\u0e2a\u0e34\u0e19\u0e04\u0e49\u0e32",
       tagline: "หนึ่งแถวต่อหนึ่งสินค้า — แตะเพื่อดูรายละเอียดไซส์และสี หรือสลับไปที่ “แสดงทุกแถว” เพื่อดูทุกบรรทัด",
+      connLive: "\u0e40\u0e0a\u0e37\u0e48\u0e2d\u0e21\u0e15\u0e48\u0e2d\u0e41\u0e25\u0e49\u0e27 \u00b7 Google Sheet",
+      connLocal: "\u0e22\u0e31\u0e07\u0e44\u0e21\u0e48\u0e40\u0e0a\u0e37\u0e48\u0e2d\u0e21\u0e15\u0e48\u0e2d \u00b7 Not connected",
       syncLabel: "\u0e2d\u0e31\u0e1b\u0e40\u0e14\u0e15\u0e25\u0e48\u0e32\u0e2a\u0e38\u0e14",
       lockBtn: "\u0e2d\u0e2d\u0e01",
       summaryHeading: "\u0e2a\u0e23\u0e38\u0e1b\u0e2a\u0e15\u0e4a\u0e2d\u0e01",
@@ -4007,7 +4065,7 @@ table.vtable tfoot td.num { text-align: right; }
      LANGUAGE SWITCH
      ============================================================ */
   const STATIC_TEXT = [
-    ["appTitle", "appTitle"], ["tagline", "tagline"], ["syncLabel", "syncLabel"],
+    ["syncLabel", "syncLabel"],
     ["summaryHeading", "summaryHeading"], ["filtersHeading", "filtersHeading"],
     ["resultsHeading", "resultsHeading"],
     ["statTotalLabel", "statTotalLabel"], ["statInLabel", "statInLabel"],
@@ -4048,6 +4106,7 @@ table.vtable tfoot td.num { text-align: right; }
       const el = document.getElementById(pair[0]);
       if (el) el.textContent = t(pair[1]);
     });
+    if (typeof Stock !== "undefined") renderConn();
     els.search.placeholder = t("searchPlaceholder");
 
     // Chips get short labels on narrow screens so all four fit
@@ -4416,6 +4475,18 @@ table.vtable tfoot td.num { text-align: right; }
     el.title = t("whoTitle");
     const admin = document.getElementById("adminBtn");
     if (admin) admin.hidden = !isOwner();
+  }
+
+  /* The dot in the masthead, matching the order log's: sea blue when the sheet
+     is reachable, coral when the page is only reading what it already has. */
+  function renderConn() {
+    const dot = document.getElementById("connDot");
+    const text = document.getElementById("connText");
+    if (!dot || !text) return;
+    const live = !!Stock.url;
+    dot.classList.toggle("live", live);
+    dot.classList.toggle("local", !live);
+    text.textContent = t(live ? "connLive" : "connLocal");
   }
 
   function isOwner() { return Stock.role === "owner"; }
@@ -5066,6 +5137,7 @@ table.vtable tfoot td.num { text-align: right; }
     loadQueue();
     renderQueueBadge();
     document.getElementById("readonlyBadge").hidden = !!Stock.url;
+    renderConn();
 
     document.getElementById("eventPick").addEventListener("change", function (e) {
       Stock.viewEvent = e.target.value;
