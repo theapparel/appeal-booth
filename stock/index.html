@@ -1751,6 +1751,7 @@ table.vtable tfoot td.num { text-align: right; }
           <select id="adjReason">
             <option value="sold">Sold</option>
             <option value="add">Stock in</option>
+            <option value="return">Return to warehouse</option>
             <option value="count">Recount</option>
           </select>
         </label>
@@ -1996,12 +1997,14 @@ table.vtable tfoot td.num { text-align: right; }
       adjustHow: "What happened?",
       reasonSold: "Taken out (no order)",
       reasonAdd: "Stock in",
+      reasonReturn: "Return to warehouse",
       reasonCount: "Recount",
       /* How each reason reads back in the ledger — short, because it sits on one
          line beside the name and the note. */
       logSold: "sold",
       logOut: "taken out",
       logAdd: "stock in",
+      logReturn: "returned to the warehouse",
       logCount: "recount",
       logUndo: "undone",
       howMany: "How many",
@@ -2215,10 +2218,12 @@ table.vtable tfoot td.num { text-align: right; }
       adjustHow: "เกิดอะไรขึ้น",
       reasonSold: "ตัดออก (ไม่ได้ขายผ่านหน้าขาย)",
       reasonAdd: "รับของเพิ่ม",
+      reasonReturn: "คืนคลัง",
       reasonCount: "นับใหม่",
       logSold: "ขายแล้ว",
       logOut: "ตัดออก",
       logAdd: "รับเข้า",
+      logReturn: "คืนคลัง",
       logCount: "นับใหม่",
       logUndo: "ยกเลิกแล้ว",
       howMany: "จำนวน",
@@ -4868,12 +4873,13 @@ table.vtable tfoot td.num { text-align: right; }
     const sel = document.getElementById("adjReason");
     sel.options[0].textContent = t("reasonSold");
     sel.options[1].textContent = t("reasonAdd");
-    sel.options[2].textContent = t("reasonCount");
+    sel.options[2].textContent = t("reasonReturn");
+    sel.options[3].textContent = t("reasonCount");
     /* Setting a line to an exact figure rewrites what everyone else sees,
        so it belongs to the owner PIN. The sheet refuses it either way —
        hiding it here just saves a staff member a pointless error. */
-    sel.options[2].hidden = !isOwner();
-    sel.options[2].disabled = !isOwner();
+    sel.options[3].hidden = !isOwner();
+    sel.options[3].disabled = !isOwner();
     if (!isOwner() && sel.value === "count") sel.value = "sold";
     document.getElementById("adjQty").value = 1;
     document.getElementById("adjBy").value = Stock.by || "";
@@ -4902,7 +4908,10 @@ table.vtable tfoot td.num { text-align: right; }
     }
 
     let delta;
-    if (reason === "sold") delta = -qty;   /* the panel's "taken out" option */
+    /* A return leaves the booth exactly as "taken out" does — the pieces are
+       off the rail either way. The reason is what separates a sale from stock
+       going back to the warehouse when the week is totalled up. */
+    if (reason === "sold" || reason === "return") delta = -qty;
     else if (reason === "add") delta = qty;
     else delta = qty - adjTarget.onHand;   // recount: move to the number that was counted
 
@@ -4947,7 +4956,7 @@ table.vtable tfoot td.num { text-align: right; }
      Show it in the language the page is in, and fall back to the code itself if
      a reason ever turns up that is not one of those. */
   const LOG_REASON = { sold: "logSold", out: "logOut", add: "logAdd",
-                       count: "logCount", undo: "logUndo" };
+                       return: "logReturn", count: "logCount", undo: "logUndo" };
   function reasonLabel(r) {
     const key = LOG_REASON[String(r || "").toLowerCase()];
     return key ? t(key) : String(r || "");
