@@ -252,7 +252,9 @@ h1, h2, h3 { margin: 0; font-weight: 600; letter-spacing: -0.01em; }
   border-radius: var(--radius-sm);
 }
 
-.page { max-width: 1360px; margin: 0 auto; padding: var(--space-6) var(--space-5) var(--space-7); }
+/* The last line of the table has to clear the floating back-to-top button, or
+   its +/- sits underneath something round and unrelated. */
+.page { max-width: 1360px; margin: 0 auto; padding: var(--space-6) var(--space-5) 84px; }
 
 .visually-hidden {
   position: absolute;
@@ -750,6 +752,10 @@ select.control {
 
 table { width: 100%; border-collapse: collapse; }
 #inventoryTable { min-width: 980px; }
+/* Scrolling to a row must clear the sticky filter bar and the table head, or a
+   tap on its +/- lands on whatever is pinned above it instead. */
+#inventoryTable tbody tr,
+#inventoryTable tbody .move-btn { scroll-margin-top: calc(var(--stick-h, 0px) + 56px); }
 caption { text-align: left; }
 
 #inventoryTable > thead th {
@@ -2449,15 +2455,24 @@ table.vtable tfoot td.num { text-align: right; }
     if (lang !== "th") return v;
     return TH_EVENT[v] || thEvent(v) || v;
   }
-  function dProduct(v, th) {
-    if (lang !== "th") return v;
-    return th || TH_PRODUCT[v] || v;
+  /* Values out of the sheet, not labels out of the dictionary — which is why
+     they did not follow the bilingual change to `t()`.
+
+     The English leads and is never hidden: it is the sheet's own word, the one
+     on the pick list, the order log and the supplier's paperwork, and the one
+     `lineKey` matches on. The Thai follows where there is one, because
+     "Blue Mist" means nothing shouted across a rail. A value with no Thai name,
+     or whose Thai is the same word, shows once. */
+  function bothWays(en, th) {
+    const a = String(en == null ? "" : en).trim();
+    const b = String(th == null ? "" : th).trim();
+    if (!a) return b;
+    if (!b || a === b) return a;
+    return a + " · " + b;
   }
-  function dColor(v, th) {
-    if (lang !== "th") return v;
-    return th || TH_COLOR[v] || v;
-  }
-  function dSize(v) { return lang === "th" && TH_SIZE[v] ? TH_SIZE[v] : v; }
+  function dProduct(v, th) { return bothWays(v, th || TH_PRODUCT[v]); }
+  function dColor(v, th) { return bothWays(v, th || TH_COLOR[v]); }
+  function dSize(v) { return bothWays(v, TH_SIZE[v]); }
 
   /* ============================================================
      DATA LAYER
