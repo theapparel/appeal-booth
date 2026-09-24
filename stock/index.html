@@ -325,6 +325,17 @@ h1, h2, h3 { margin: 0; font-weight: 600; letter-spacing: -0.01em; }
    reach until the picker is back on the event that is running. */
 body.is-past-event .move-btn,
 body.is-past-event #syncBtn { display: none !important; }
+.admin-h {
+  margin: var(--space-5) 0 var(--space-3);
+  font-size: 13px; font-weight: 600; color: var(--color-text);
+}
+.admin-h:first-child { margin-top: 0; }
+.admin-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+.admin-row input { flex: 1 1 auto; min-width: 0; }
+.admin-row input.admin-pin { flex: 0 0 120px; }
+.admin-row .icon-btn { flex: 0 0 auto; }
+.admin-msg { white-space: pre-line; }
+.admin-msg--bad { color: var(--color-accent); }
 .event-pick { font: inherit; cursor: pointer; border: 0; }
 .event-pick:disabled { cursor: default; opacity: 1; }
 .event-badge {
@@ -1475,6 +1486,7 @@ table.vtable tfoot td.num { text-align: right; }
       <button class="who-badge" type="button" id="whoBadge" hidden><b id="whoName"></b><span class="who-out" id="lockBtnText">Sign out</span></button>
       <button class="lock-btn" type="button" id="syncBtn" title="Pull sales from the order log" data-title-key="pullOrders"><span id="syncBtnText">Pull sales</span></button>
       <button class="lock-btn" type="button" id="movesBtn"><span id="movesBtnText">Movements</span></button>
+      <button class="lock-btn" type="button" id="adminBtn" hidden><span id="adminBtnText">Settings</span></button>
       <button class="lock-btn" type="button" id="refreshBtn" aria-label="Refresh"><span aria-hidden="true">↻</span> <span id="refreshBtnText">Refresh</span></button>
       <div class="seg seg--lang" role="group" id="langGroup" aria-label="Language">
         <button type="button" id="langEn" aria-pressed="true" lang="en">EN</button>
@@ -1713,6 +1725,52 @@ table.vtable tfoot td.num { text-align: right; }
   </div>
 </div>
 
+<!-- 4c2. SETTINGS — owner only. Reads names, never PINs. -->
+<div class="overlay" id="adminOverlay" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="adminTitle" id="adminModal">
+    <div class="modal-head">
+      <div>
+        <h2 id="adminTitle">Settings</h2>
+        <p id="adminSubtitle"></p>
+      </div>
+      <button class="icon-btn" type="button" id="adminCloseX" aria-label="Close">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+          <path d="M2.5 2.5l7 7M9.5 2.5l-7 7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <h3 class="admin-h" id="adminEventsH">Events</h3>
+      <div id="adminEvents"></div>
+      <button class="lock-btn" type="button" id="adminAddEvent">+ <span id="adminAddEventText">Add an event</span></button>
+
+      <label class="field"><span id="adminActiveLabel">Running now</span>
+        <select id="adminActive"></select>
+      </label>
+      <label class="field"><span id="adminDateLabel">Counted on</span>
+        <input id="adminDate" type="date">
+      </label>
+      <label class="field"><span id="adminLowLabel">Low stock at</span>
+        <input id="adminLow" type="number" inputmode="numeric" min="0" step="1">
+      </label>
+
+      <h3 class="admin-h" id="adminStaffH">People and PINs</h3>
+      <p class="modal-note" id="adminStaffNote"></p>
+      <div id="adminStaff"></div>
+      <button class="lock-btn" type="button" id="adminAddStaff">+ <span id="adminAddStaffText">Add a person</span></button>
+
+      <label class="field"><span id="adminOwnerLabel">Owner PIN</span>
+        <input id="adminOwnerPin" type="text" inputmode="numeric" autocomplete="off">
+      </label>
+
+      <p class="modal-note admin-msg" id="adminMsg" hidden></p>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-primary" type="button" id="adminSave">Save</button>
+    </div>
+  </div>
+</div>
+
 <!-- 4d. FIRST-RUN SETUP -->
 <div class="overlay" id="setupOverlay" hidden>
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="setupTitle" id="setupModal">
@@ -1919,6 +1977,23 @@ table.vtable tfoot td.num { text-align: right; }
       movesBtn: "Movements",
       movesEmpty: "No movements yet. The numbers are still the opening count.",
       movesMine: "Today only, and only the lines you recorded yourself.",
+      adminBtn: "Settings",
+      adminTitle: "Settings",
+      adminSubtitle: "Events, who can sign in, and their PINs. Shared with the booth order page.",
+      adminEventsH: "Events",
+      adminAddEvent: "Add an event",
+      adminActiveLabel: "Running now",
+      adminDateLabel: "Counted on",
+      adminLowLabel: "Low stock at (pieces left)",
+      adminStaffH: "People and PINs",
+      adminStaffNote: "A PIN is never shown back \u2014 leave a box empty to keep that person\u2019s PIN as it is. Remove someone by deleting their row. Six digits or more.",
+      adminAddStaff: "Add a person",
+      adminOwnerLabel: "Owner PIN (leave empty to keep it)",
+      adminSaveBtn: "Save",
+      adminSaved: "Saved",
+      adminRemove: "Remove",
+      adminNamePh: "Name as it should appear in the log",
+      adminPinPh: "\u2022\u2022\u2022\u2022\u2022\u2022",
       eventPast: "finished",
       eventPastNote: "Looking at {name}, which has finished. These are that event\u2019s closing figures \u2014 nothing can be recorded here.",
       movesEmptyToday: "Nothing recorded today.",
@@ -2123,6 +2198,23 @@ table.vtable tfoot td.num { text-align: right; }
       movesBtn: "ประวัติ",
       movesEmpty: "ยังไม่มีการเคลื่อนไหว ตัวเลขยังเป็นยอดนับตอนเปิดร้าน",
       movesMine: "เฉพาะรายการที่คุณบันทึกเอง เฉพาะวันนี้",
+      adminBtn: "ตั้งค่า",
+      adminTitle: "ตั้งค่า",
+      adminSubtitle: "งาน คนที่เข้าใช้ได้ และรหัส · ใช้ร่วมกับหน้าออเดอร์",
+      adminEventsH: "งาน · Events",
+      adminAddEvent: "เพิ่มงาน",
+      adminActiveLabel: "งานที่กำลังขาย",
+      adminDateLabel: "วันที่นับ",
+      adminLowLabel: "เตือนเหลือน้อยเมื่อเหลือ (ชิ้น)",
+      adminStaffH: "คน และรหัส",
+      adminStaffNote: "ระบบจะไม่แสดงรหัสเดิมกลับมา — เว้นว่างไว้คือใช้รหัสเดิม ถ้าจะเอาคนออกให้ลบทั้งแถว · ควรใช้ 6 หลักขึ้นไป",
+      adminAddStaff: "เพิ่มคน",
+      adminOwnerLabel: "รหัสเจ้าของ (เว้นว่าง = ไม่เปลี่ยน)",
+      adminSaveBtn: "บันทึก",
+      adminSaved: "บันทึกแล้ว",
+      adminRemove: "ลบ",
+      adminNamePh: "ชื่อที่จะขึ้นในประวัติ",
+      adminPinPh: "\u2022\u2022\u2022\u2022\u2022\u2022",
       eventPast: "จบแล้ว",
       eventPastNote: "กำลังดู {name} ซึ่งจบแล้ว ตัวเลขคือยอดปิดงาน — บันทึกอะไรที่นี่ไม่ได้",
       movesEmptyToday: "วันนี้คุณยังไม่ได้บันทึกรายการ",
@@ -3962,6 +4054,13 @@ table.vtable tfoot td.num { text-align: right; }
     ["statInHint", "statInHint"], ["statLowHint", "statLowHint2"], ["statOutHint", "statOutHint"],
     ["syncLabel", "countedOn"],
     ["lockBtnText", "lockBtn"], ["movesBtnText", "movesBtn"], ["syncBtnText", "pullBtn"],
+    ["adminBtnText", "adminBtn"], ["adminTitle", "adminTitle"],
+    ["adminSubtitle", "adminSubtitle"], ["adminEventsH", "adminEventsH"],
+    ["adminAddEventText", "adminAddEvent"], ["adminActiveLabel", "adminActiveLabel"],
+    ["adminDateLabel", "adminDateLabel"], ["adminLowLabel", "adminLowLabel"],
+    ["adminStaffH", "adminStaffH"], ["adminStaffNote", "adminStaffNote"],
+    ["adminAddStaffText", "adminAddStaff"], ["adminOwnerLabel", "adminOwnerLabel"],
+    ["adminSave", "adminSaveBtn"],
     ["refreshBtnText", "refresh"], ["movesTitle", "movesTitle"], ["movesHint", "movesHint"],
     ["movesCloseBtn", "close"], ["adjTitle", "adjustTitle"], ["adjHowLabel", "adjustHow"],
     ["adjQtyLabel", "howMany"], ["adjByLabel", "whoBy"], ["adjNoteLabel", "noteLabel"],
@@ -4347,6 +4446,8 @@ table.vtable tfoot td.num { text-align: right; }
       name.appendChild(r);
     }
     el.title = t("whoTitle");
+    const admin = document.getElementById("adminBtn");
+    if (admin) admin.hidden = !isOwner();
   }
 
   function isOwner() { return Stock.role === "owner"; }
@@ -4423,6 +4524,144 @@ table.vtable tfoot td.num { text-align: right; }
 
     state.items = groupIntoItems(state.records);
     return { matched: matched, added: added };
+  }
+
+  /* ---- settings, owner only --------------------------------
+     The sheet hands back names and never a PIN, so every PIN box starts empty
+     and an empty box means "leave it alone". That is the whole trick: the panel
+     can set a PIN without ever being able to show one. */
+  function adminRowIcon(onClick) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "icon-btn";
+    b.setAttribute("aria-label", t("adminRemove"));
+    b.title = t("adminRemove");
+    b.innerHTML = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">' +
+      '<path d="M2.5 2.5l7 7M9.5 2.5l-7 7" stroke="currentColor" stroke-width="1.6" ' +
+      'stroke-linecap="round"/></svg>';
+    b.addEventListener("click", onClick);
+    return b;
+  }
+
+  function adminEventRow(value) {
+    const row = document.createElement("div");
+    row.className = "admin-row";
+    const name = document.createElement("input");
+    name.type = "text";
+    name.value = value || "";
+    name.className = "admin-event";
+    row.appendChild(name);
+    row.appendChild(adminRowIcon(function () { row.remove(); adminSyncActive(); }));
+    name.addEventListener("input", adminSyncActive);
+    return row;
+  }
+
+  function adminStaffRow(name) {
+    const row = document.createElement("div");
+    row.className = "admin-row";
+    const n = document.createElement("input");
+    n.type = "text";
+    n.className = "admin-name";
+    n.value = name || "";
+    n.placeholder = t("adminNamePh");
+    const pin = document.createElement("input");
+    pin.type = "text";
+    pin.className = "admin-pin";
+    pin.inputMode = "numeric";
+    pin.autocomplete = "off";
+    pin.placeholder = t("adminPinPh");
+    row.appendChild(n);
+    row.appendChild(pin);
+    row.appendChild(adminRowIcon(function () { row.remove(); }));
+    return row;
+  }
+
+  /* The "running now" list can only offer events that are actually in the list
+     above, so the two cannot disagree. */
+  function adminSyncActive() {
+    const sel = document.getElementById("adminActive");
+    const want = sel.value;
+    const names = [...document.querySelectorAll("#adminEvents .admin-event")]
+      .map(function (i) { return i.value.trim(); }).filter(Boolean);
+    sel.innerHTML = "";
+    names.forEach(function (n) {
+      const o = document.createElement("option");
+      o.value = n;
+      o.textContent = dEvent(n);
+      sel.appendChild(o);
+    });
+    if (names.indexOf(want) !== -1) sel.value = want;
+  }
+
+  /* callApi turns a refusal from the sheet into a thrown Error carrying its
+     message, so the reason has to be read off the error rather than a reply.
+     A request that never landed is a TypeError — that one really is "no signal". */
+  function apiErrText(err) {
+    if (!err || err.name === "TypeError") return t("offline");
+    return err.message || t("offline");
+  }
+
+  function adminMsg(text, bad) {
+    const box = document.getElementById("adminMsg");
+    box.hidden = !text;
+    box.textContent = text || "";
+    box.classList.toggle("admin-msg--bad", !!bad);
+  }
+
+  function adminFill(data) {
+    const evBox = document.getElementById("adminEvents");
+    evBox.innerHTML = "";
+    (data.events || []).forEach(function (e) { evBox.appendChild(adminEventRow(e)); });
+    adminSyncActive();
+    document.getElementById("adminActive").value = data.activeEvent || "";
+    document.getElementById("adminDate").value = data.countDate || "";
+    document.getElementById("adminLow").value = data.lowAt === undefined ? 1 : data.lowAt;
+
+    const stBox = document.getElementById("adminStaff");
+    stBox.innerHTML = "";
+    (data.staff || []).forEach(function (p) { stBox.appendChild(adminStaffRow(p.name)); });
+    document.getElementById("adminOwnerPin").value = "";
+  }
+
+  function openAdmin() {
+    if (!isOwner()) return;
+    adminMsg("");
+    document.getElementById("adminOverlay").hidden = false;
+    callApi("adminRead").then(adminFill).catch(function (err) {
+      adminMsg(apiErrText(err), true);
+    });
+  }
+
+  function saveAdmin() {
+    const btn = document.getElementById("adminSave");
+    btn.disabled = true;
+    adminMsg("");
+    const events = [...document.querySelectorAll("#adminEvents .admin-event")]
+      .map(function (i) { return i.value.trim(); }).filter(Boolean);
+    const staff = [...document.querySelectorAll("#adminStaff .admin-row")].map(function (row) {
+      return { name: row.querySelector(".admin-name").value.trim(),
+               pin: row.querySelector(".admin-pin").value.trim() };
+    }).filter(function (p) { return p.name; });
+
+    callApi("adminSave", {
+      events: events,
+      activeEvent: document.getElementById("adminActive").value,
+      countDate: document.getElementById("adminDate").value,
+      lowAt: document.getElementById("adminLow").value,
+      staff: staff,
+      adminPin: document.getElementById("adminOwnerPin").value.trim()
+    }).then(function (res) {
+      btn.disabled = false;
+      adminFill(res);
+      adminMsg([t("adminSaved")].concat(res.notes || []).join("\n"), false);
+      /* The event list, the running event and the threshold all change what the
+         page below is showing, so re-read it rather than leave a stale view. */
+      Stock.viewEvent = "";
+      refreshFromSheet().catch(function () {});
+    }).catch(function (err) {
+      btn.disabled = false;
+      adminMsg(apiErrText(err), true);
+    });
   }
 
   /* Which event the page is LOOKING at. Never which event it writes to — the
@@ -4886,6 +5125,17 @@ table.vtable tfoot td.num { text-align: right; }
       Stock.viewEvent = e.target.value;
       refreshFromSheet().catch(function () { showToast(t("offline")); });
     });
+    document.getElementById("adminBtn").addEventListener("click", openAdmin);
+    document.getElementById("adminCloseX").addEventListener("click", function () {
+      document.getElementById("adminOverlay").hidden = true;
+    });
+    document.getElementById("adminAddEvent").addEventListener("click", function () {
+      document.getElementById("adminEvents").appendChild(adminEventRow(""));
+    });
+    document.getElementById("adminAddStaff").addEventListener("click", function () {
+      document.getElementById("adminStaff").appendChild(adminStaffRow(""));
+    });
+    document.getElementById("adminSave").addEventListener("click", saveAdmin);
     document.getElementById("movesBtn").addEventListener("click", openMovements);
     document.getElementById("movesCloseX").addEventListener("click", function () {
       document.getElementById("movesOverlay").hidden = true;
