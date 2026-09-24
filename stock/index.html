@@ -309,6 +309,24 @@ h1, h2, h3 { margin: 0; font-weight: 600; letter-spacing: -0.01em; }
 
 .head-actions { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
 
+/* The picker is the badge with a list behind it, so switching events does not
+   add another control to a header that is already busy. */
+.past-event {
+  margin: 0 0 var(--space-4);
+  padding: 8px 12px;
+  border: 1px solid var(--color-border);
+  border-left: 3px solid var(--color-sea, #5280A9);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  font-size: 13px; color: var(--color-muted);
+}
+.past-event[hidden] { display: none !important; }
+/* Reading a finished event is reading. Everything that would write is out of
+   reach until the picker is back on the event that is running. */
+body.is-past-event .move-btn,
+body.is-past-event #syncBtn { display: none !important; }
+.event-pick { font: inherit; cursor: pointer; border: 0; }
+.event-pick:disabled { cursor: default; opacity: 1; }
 .event-badge {
   margin: 0;
   font-size: 12px;
@@ -1449,6 +1467,7 @@ table.vtable tfoot td.num { text-align: right; }
     </div>
     <div class="head-actions">
       <p class="event-badge" id="eventBadge" hidden></p>
+      <select class="event-badge event-pick" id="eventPick" hidden aria-label="Event"></select>
       <p class="sync"><span class="dot" aria-hidden="true"></span> <span id="syncLabel">Last sync</span> <span id="lastSync">—</span></p>
       <span class="auto-badge" id="autoBadge" hidden></span>
       <span class="queue-badge" id="queueBadge" hidden></span>
@@ -1467,6 +1486,9 @@ table.vtable tfoot td.num { text-align: right; }
   <div class="controls">
 
   <!-- 2. SUMMARY -->
+  <!-- Only when the page is looking at an event that has finished. -->
+  <p class="past-event" id="pastEvent" hidden></p>
+
   <div class="alert" id="orderAlert" role="status" hidden>
     <div class="alert-body">
       <p class="alert-title" id="alertTitle"></p>
@@ -1897,6 +1919,8 @@ table.vtable tfoot td.num { text-align: right; }
       movesBtn: "Movements",
       movesEmpty: "No movements yet. The numbers are still the opening count.",
       movesMine: "Today only, and only the lines you recorded yourself.",
+      eventPast: "finished",
+      eventPastNote: "Looking at {name}, which has finished. These are that event\u2019s closing figures \u2014 nothing can be recorded here.",
       movesEmptyToday: "Nothing recorded today.",
       undo: "Undo",
       undone: "Reversed",
@@ -2099,6 +2123,8 @@ table.vtable tfoot td.num { text-align: right; }
       movesBtn: "ประวัติ",
       movesEmpty: "ยังไม่มีการเคลื่อนไหว ตัวเลขยังเป็นยอดนับตอนเปิดร้าน",
       movesMine: "เฉพาะรายการที่คุณบันทึกเอง เฉพาะวันนี้",
+      eventPast: "จบแล้ว",
+      eventPastNote: "กำลังดู {name} ซึ่งจบแล้ว ตัวเลขคือยอดปิดงาน — บันทึกอะไรที่นี่ไม่ได้",
       movesEmptyToday: "วันนี้คุณยังไม่ได้บันทึกรายการ",
       undo: "ยกเลิก",
       undone: "ยกเลิกแล้ว",
@@ -2229,7 +2255,29 @@ table.vtable tfoot td.num { text-align: right; }
   function tf(key, vars) { return fmt(t(key), vars); }
 
   // Display helpers — translate data values without touching the data
-  function dEvent(v) { return lang === "th" && TH_EVENT[v] ? TH_EVENT[v] : v; }
+  /* Event names are stored as the order page writes them — "EMP SPM 2F 24SEP-7OCT".
+     Thai staff should not have to read that, and adding every new event to a hand
+     written map would mean editing the page each time, so the shape is parsed:
+     venue, floor, and the two dates. Anything that does not fit is shown as it is. */
+  const TH_MONTH = { JAN: "\u0e21.\u0e04.", FEB: "\u0e01.\u0e1e.", MAR: "\u0e21\u0e35.\u0e04.",
+                     APR: "\u0e40\u0e21.\u0e22.", MAY: "\u0e1e.\u0e04.", JUN: "\u0e21\u0e34.\u0e22.",
+                     JUL: "\u0e01.\u0e04.", AUG: "\u0e2a.\u0e04.", SEP: "\u0e01.\u0e22.",
+                     OCT: "\u0e15.\u0e04.", NOV: "\u0e1e.\u0e22.", DEC: "\u0e18.\u0e04." };
+
+  function thEvent(v) {
+    const m = String(v || "").match(/^(.*?)\s*(\d+)F\s+(\d{1,2})([A-Z]{3})\s*-\s*(\d{1,2})([A-Z]{3})$/i);
+    if (!m) return null;
+    const m1 = TH_MONTH[m[4].toUpperCase()], m2 = TH_MONTH[m[6].toUpperCase()];
+    if (!m1 || !m2) return null;
+    const when = m1 === m2 ? m[3] + "\u2013" + m[5] + " " + m1
+                           : m[3] + " " + m1 + " - " + m[5] + " " + m2;
+    return m[1] + " \u0e0a\u0e31\u0e49\u0e19 " + m[2] + " \u00b7 " + when;
+  }
+
+  function dEvent(v) {
+    if (lang !== "th") return v;
+    return TH_EVENT[v] || thEvent(v) || v;
+  }
   function dProduct(v, th) {
     if (lang !== "th") return v;
     return th || TH_PRODUCT[v] || v;
@@ -3536,6 +3584,10 @@ table.vtable tfoot td.num { text-align: right; }
     if (!els.eventField) els.eventField = els.event.closest(".field");
     const single = events.length === 1;
     if (els.eventField) els.eventField.hidden = single;
+    /* Once the sheet is connected the picker owns this corner of the header;
+       this only speaks for the offline copy, which knows one event. */
+    const pick = document.getElementById("eventPick");
+    if (pick && !pick.hidden) return;
     els.eventBadge.hidden = !single;
     if (single) els.eventBadge.textContent = dEvent(events[0]);
   }
@@ -4373,9 +4425,56 @@ table.vtable tfoot td.num { text-align: right; }
     return { matched: matched, added: added };
   }
 
+  /* Which event the page is LOOKING at. Never which event it writes to — the
+     sheet decides that, and it is always the one that is running. */
+  function viewedEvent() { return Stock.viewEvent || ""; }
+
+  function renderEventPick(data) {
+    const pick = document.getElementById("eventPick");
+    const badge = document.getElementById("eventBadge");
+    const list = (data && data.events) || [];
+    const ev = (data && data.event) || EVENT_NAME;
+
+    /* One event, or a staff PIN: just the badge, nothing to choose. */
+    if (list.length < 2 || !isOwner()) {
+      pick.hidden = true;
+      badge.hidden = !ev;
+      badge.textContent = dEvent(ev);
+      return;
+    }
+    badge.hidden = true;
+    pick.hidden = false;
+    pick.innerHTML = "";
+    list.forEach(function (name) {
+      const o = document.createElement("option");
+      o.value = name;
+      o.textContent = dEvent(name) + (name === data.activeEvent ? "" : " \u00b7 " + t("eventPast"));
+      pick.appendChild(o);
+    });
+    pick.value = ev;
+    pick.classList.toggle("event-pick--past", data.isActiveEvent === false);
+  }
+
+  function renderPastBanner(data) {
+    const box = document.getElementById("pastEvent");
+    if (!box) return;
+    const past = data && data.events && data.events.length > 1 && data.isActiveEvent === false;
+    box.hidden = !past;
+    if (past) box.textContent = tf("eventPastNote", { name: dEvent(data.event) });
+    /* Reading a finished event is reading. Nothing that writes should be within
+       reach, or a tap meant for today lands in a closed week. */
+    document.body.classList.toggle("is-past-event", !!past);
+  }
+
   function refreshFromSheet() {
     if (!Stock.url) return Promise.resolve(false);
-    return callApi("list").then(function (data) {
+    const asked = viewedEvent();
+    return callApi("list", asked ? { event: asked } : {}).then(function (data) {
+      Stock.viewEvent = data.event || asked || "";
+      Stock.activeEvent = data.activeEvent || data.event || "";
+      Stock.isActiveEvent = data.isActiveEvent !== false;
+      renderEventPick(data);
+      renderPastBanner(data);
       if (data.lowAt) CONFIG.lowAt = Number(data.lowAt) || 1;
       Stock.autoSync = !!data.autoSync;
       Stock.lastAutoSync = data.lastAutoSync || "";
@@ -4783,6 +4882,10 @@ table.vtable tfoot td.num { text-align: right; }
     renderQueueBadge();
     document.getElementById("readonlyBadge").hidden = !!Stock.url;
 
+    document.getElementById("eventPick").addEventListener("change", function (e) {
+      Stock.viewEvent = e.target.value;
+      refreshFromSheet().catch(function () { showToast(t("offline")); });
+    });
     document.getElementById("movesBtn").addEventListener("click", openMovements);
     document.getElementById("movesCloseX").addEventListener("click", function () {
       document.getElementById("movesOverlay").hidden = true;
