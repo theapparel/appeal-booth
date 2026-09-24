@@ -227,13 +227,6 @@ h1, h2, h3 { margin: 0; font-weight: 600; letter-spacing: -0.01em; }
   box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.16);
 }
 
-.gate-input--url {
-  font-size: 13px;
-  letter-spacing: 0;
-  text-align: left;
-  font-weight: 400;
-  margin-bottom: var(--space-2);
-}
 .gate-note { margin: 0 0 var(--space-4); font-size: 12px; color: var(--color-faint); }
 .gate-error { margin: var(--space-3) 0 0; font-size: 13px; color: var(--color-danger); }
 .gate-btn { width: 100%; height: 48px; justify-content: center; margin-top: var(--space-4); }
@@ -1448,15 +1441,14 @@ table.vtable tfoot td.num { text-align: right; }
   <form class="gate-card" id="pinForm" autocomplete="off">
     <p class="gate-brand">APPEAL Summerwear</p>
     <h1 class="gate-title">Booth stock <span>สต๊อกหน้าร้าน</span></h1>
-    <p class="gate-help">Enter your PIN to continue<br><span>ใส่รหัสของคุณเพื่อเข้าใช้งาน</span></p>
+    <p class="gate-help" id="gateHelp">Enter your PIN to continue<br><span>ใส่รหัสของคุณเพื่อเข้าใช้งาน</span></p>
 
-    <!-- Only on a phone that has never been connected. Once pasted it is
-         remembered on that device and this never shows again. -->
-    <div id="gateLinkWrap" hidden>
-      <label class="visually-hidden" for="gateLink">Connection link</label>
-      <input class="gate-input gate-input--url" id="gateLink" type="url" autocomplete="off"
-             spellcheck="false" placeholder="https://script.google.com/…/exec" />
-      <p class="gate-note">Paste the connection link once · วางลิงก์เชื่อมต่อครั้งแรกครั้งเดียว</p>
+    <!-- A device that has never been connected. There is deliberately nothing
+         to type: the sheet address only ever arrives in a link, so nobody is
+         ever asked for it, and nobody can be talked into pasting one in. -->
+    <div id="gateNoLink" hidden>
+      <p class="gate-help">This device is not connected yet<br><span>เครื่องนี้ยังไม่ได้เชื่อมต่อ</span></p>
+      <p class="gate-note">Open the connection link you were sent, on this device.<br>เปิดลิงก์เชื่อมต่อที่ได้รับ บนเครื่องนี้</p>
     </div>
 
     <label class="visually-hidden" for="pinInput">PIN</label>
@@ -1772,26 +1764,9 @@ table.vtable tfoot td.num { text-align: right; }
 </div>
 
 <!-- 4d. FIRST-RUN SETUP -->
-<div class="overlay" id="setupOverlay" hidden>
-  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="setupTitle" id="setupModal">
-    <div class="modal-head">
-      <div>
-        <h2 id="setupTitle">One-time setup</h2>
-        <p id="setupBody"></p>
-      </div>
-    </div>
-    <div class="modal-body">
-      <label class="field"><span>Apps Script web app URL</span>
-        <input id="setupUrl" type="url" placeholder="https://script.google.com/macros/s/.../exec" autocomplete="off">
-      </label>
-      <p class="modal-note" id="setupError" hidden></p>
-    </div>
-    <div class="modal-foot">
-      <button class="btn" type="button" id="setupSkip">Just look</button>
-      <button class="btn btn-primary" type="button" id="setupSave">Connect</button>
-    </div>
-  </div>
-</div>
+<!-- The sheet address is never typed in, here or at the gate. It arrives in a
+     connection link and nowhere else, so there is no box to paste a different
+     one into. A phone that needs re-pointing is sent a new link. -->
 
 <!-- 5. SIZE CHART MODAL -->
 <div class="overlay" id="modalOverlay" hidden>
@@ -2027,12 +2002,6 @@ table.vtable tfoot td.num { text-align: right; }
       queuedTitle: "Saved on this phone. They send themselves when the connection comes back \u2014 don't clear browser data.",
       offline: "No connection \u2014 saved on this phone",
       refresh: "Refresh",
-      setupTitle: "One-time setup",
-      setupBody: "Paste the web app URL from Apps Script (Deploy \u25b8 Manage deployments). It is stored on this device only.",
-      setupSave: "Connect",
-      setupSkip: "Just look, don't record",
-      setupBad: "That does not look like an Apps Script /exec URL.",
-      setupFail: "Could not reach that URL. Check the deployment is set to \"Anyone\".",
       readOnly: "Read-only \u2014 not connected to the sheet",
       roleOwner: "owner",
       whoTitle: "Everything you record is filed under this name. Press Lock to hand the phone over.",
@@ -2248,12 +2217,6 @@ table.vtable tfoot td.num { text-align: right; }
       queuedTitle: "บันทึกไว้ในเครื่องแล้ว จะส่งเองเมื่อเน็ตกลับมา อย่าล้างข้อมูลเบราว์เซอร์",
       offline: "ไม่มีสัญญาณ — บันทึกไว้ในเครื่อง",
       refresh: "รีเฟรช",
-      setupTitle: "ตั้งค่าครั้งแรก",
-      setupBody: "วางลิงก์เว็บแอปจาก Apps Script (Deploy ▸ Manage deployments) เก็บไว้เฉพาะเครื่องนี้",
-      setupSave: "เชื่อมต่อ",
-      setupSkip: "ดูอย่างเดียว ไม่บันทึก",
-      setupBad: "ลิงก์นี้ไม่ใช่ /exec ของ Apps Script",
-      setupFail: "เข้าถึงลิงก์ไม่ได้ ตรวจว่าตั้ง Who has access เป็น Anyone แล้ว",
       readOnly: "โหมดดูอย่างเดียว — ยังไม่ต่อกับชีต",
       roleOwner: "เจ้าของ",
       whoTitle: "ทุกอย่างที่บันทึกจะลงชื่อนี้ ถ้าจะส่งเครื่องให้คนอื่นใช้ กดล็อกก่อน",
@@ -4064,8 +4027,7 @@ table.vtable tfoot td.num { text-align: right; }
     ["refreshBtnText", "refresh"], ["movesTitle", "movesTitle"], ["movesHint", "movesHint"],
     ["movesCloseBtn", "close"], ["adjTitle", "adjustTitle"], ["adjHowLabel", "adjustHow"],
     ["adjQtyLabel", "howMany"], ["adjByLabel", "whoBy"], ["adjNoteLabel", "noteLabel"],
-    ["adjSave", "saveMove"], ["setupTitle", "setupTitle"], ["setupBody", "setupBody"],
-    ["setupSave", "setupSave"], ["setupSkip", "setupSkip"], ["readonlyBadge", "readOnly"],
+    ["adjSave", "saveMove"], ["readonlyBadge", "readOnly"],
     ["alertView", "alertView"], ["alertCopy", "alertCopy"],
     ["modalCloseBtn", "close"]
   ];
@@ -5088,28 +5050,6 @@ table.vtable tfoot td.num { text-align: right; }
     }
   }
 
-  /* ---- first run -------------------------------------------- */
-  function openSetup() { document.getElementById("setupOverlay").hidden = false; }
-
-  function saveSetup() {
-    const input = document.getElementById("setupUrl");
-    const err = document.getElementById("setupError");
-    const url = input.value.trim();
-    if (!/^https:\/\/script\.google\.com\/.+\/exec$/.test(url)) {
-      err.hidden = false; err.textContent = t("setupBad"); return;
-    }
-    Stock.url = url;
-    callApi("ping").then(function () {
-      lsSet(LS_API, url);
-      document.getElementById("setupOverlay").hidden = true;
-      document.getElementById("readonlyBadge").hidden = true;
-      return refreshFromSheet();
-    }).then(function () { drainQueue(); }).catch(function () {
-      Stock.url = "";
-      err.hidden = false; err.textContent = t("setupFail");
-    });
-  }
-
   function wireStock() {
     Stock.url = lsGet(LS_API, "");
     const session = window.APPEAL_SESSION || {};
@@ -5161,19 +5101,15 @@ table.vtable tfoot td.num { text-align: right; }
       refreshFromSheet().then(function () { showToast(t("refresh")); return checkOrders(); })
         .catch(function () { showToast(t("offline")); });
     });
-    document.getElementById("setupSave").addEventListener("click", saveSetup);
-    document.getElementById("setupSkip").addEventListener("click", function () {
-      document.getElementById("setupOverlay").hidden = true;
-    });
-
     window.addEventListener("online", drainQueue);
     setInterval(drainQueue, 60000);
 
+    /* The gate cannot open without a stored address, so this is always true;
+       the guard stays because a cleared localStorage should degrade to a
+       read-only page, never to a prompt for the address. */
     if (Stock.url) {
       refreshFromSheet().then(checkOrders).catch(function () { showToast(t("offline")); });
       drainQueue();
-    } else {
-      openSetup();
     }
   }
 
@@ -5219,8 +5155,8 @@ table.vtable tfoot td.num { text-align: right; }
   const gate = document.getElementById("pinGate");
   const form = document.getElementById("pinForm");
   const input = document.getElementById("pinInput");
-  const linkWrap = document.getElementById("gateLinkWrap");
-  const link = document.getElementById("gateLink");
+  const noLink = document.getElementById("gateNoLink");
+  const help = document.getElementById("gateHelp");
   const btn = document.getElementById("gateBtn");
   const error = document.getElementById("pinError");
   const hint = document.getElementById("pinHint");
@@ -5307,11 +5243,22 @@ table.vtable tfoot td.num { text-align: right; }
   const already = saved();
   if (already) { open(already); return; }
 
+  /* Without a connection link there is nothing to sign in to, so the PIN box
+     and the button come off the screen entirely rather than sitting there
+     failing. The only way in is the link, which is the point: a page that never
+     asks for the sheet address is a page nobody can be tricked into feeding a
+     different one. */
   const storedUrl = ls(LS_API, "");
-  if (!storedUrl) linkWrap.hidden = false;
-
   document.body.style.overflow = "hidden";
-  setTimeout(function () { (storedUrl ? input : link).focus(); }, 60);
+  if (!storedUrl) {
+    noLink.hidden = false;
+    help.hidden = true;
+    input.hidden = true;
+    btn.hidden = true;
+    hint.hidden = true;
+  } else {
+    setTimeout(function () { input.focus(); }, 60);
+  }
 
   function fail(msg) {
     error.hidden = false;
@@ -5324,20 +5271,9 @@ table.vtable tfoot td.num { text-align: right; }
   form.addEventListener("submit", function (e) {
     e.preventDefault();
     const pin = input.value.trim();
-    const url = storedUrl || link.value.trim();
+    const url = storedUrl;
 
-    if (!url) {
-      error.hidden = false;
-      error.textContent = "Paste the connection link first · วางลิงก์เชื่อมต่อก่อน";
-      link.focus();
-      return;
-    }
-    if (!EXEC_RE.test(url)) {
-      error.hidden = false;
-      error.textContent = "That link does not look right · ลิงก์ไม่ถูกต้อง";
-      link.focus();
-      return;
-    }
+    if (!url || !EXEC_RE.test(url)) return;
     if (!pin) { input.focus(); return; }
 
     btn.disabled = true;
