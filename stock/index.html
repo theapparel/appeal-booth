@@ -387,7 +387,11 @@ body.is-past-event #syncBtn { display: none !important; }
   border-radius: var(--radius-md);
   padding: 6px 10px;
 }
-.seg--lang button { min-width: 46px; justify-content: center; text-align: center; }
+/* Bilingual labels: Thai in ink, English after the dot in the softer colour,
+   the same pairing the booth order log uses. */
+.lbl-th { font-weight: 600; }
+.lbl-en { font-weight: 400; color: #6E6660; }
+button .lbl-en, .seg .lbl-en { color: inherit; opacity: .72; }
 
 /* Thai script needs a little more line height to breathe */
 body[data-lang="th"] { line-height: 1.65; }
@@ -1535,10 +1539,6 @@ table.vtable tfoot td.num { text-align: right; }
     <button class="lock-btn" type="button" id="movesBtn"><span id="movesBtnText">Movements</span></button>
     <button class="lock-btn" type="button" id="adminBtn" hidden><span id="adminBtnText">Settings</span></button>
     <button class="lock-btn" type="button" id="refreshBtn" aria-label="Refresh"><span aria-hidden="true">↻</span> <span id="refreshBtnText">Refresh</span></button>
-    <div class="seg seg--lang" role="group" id="langGroup" aria-label="Language">
-      <button type="button" id="langEn" aria-pressed="true" lang="en">EN</button>
-      <button type="button" id="langTh" aria-pressed="false" lang="th">ไทย</button>
-    </div>
   </div>
 
   <div class="controls">
@@ -2348,21 +2348,68 @@ table.vtable tfoot td.num { text-align: right; }
     "8-9Y": "8–9 ปี"
   };
 
-  /* Remember the language per device. Without this a staff member has to tap
-     ไทย every morning, because the unlock expires at midnight and the page
-     reloads fresh. */
+  /* There is no language choice any more, so nothing is remembered and nothing
+     can be remembered wrong. `lang` survives only as the locale for dates and
+     numbers, and as the `lang` attribute on the page. Anything a device kept
+     from the old toggle is cleared on the way past. */
   const LS_LANG = "appeal-stock-lang";
-  let lang = (function () {
-    try {
-      const saved = localStorage.getItem(LS_LANG);
-      if (saved === "en" || saved === "th") return saved;
-    } catch (e) { /* private window — fall back to the default */ }
-    return CONFIG.defaultLang;
-  })();
+  try { localStorage.removeItem(LS_LANG); } catch (e) { /* private window */ }
+  const lang = CONFIG.defaultLang === "en" ? "en" : "th";
+
+  /* Both languages, always, Thai first — `ไทย · English`.
+     A toggle only ever meant somebody could find the page in the language they
+     do not read, and at a booth two people share one phone. So there is no
+     choice to get wrong: every label carries both.
+
+     A key whose two entries say the same thing shows once, and a string that
+     was already written bilingual is left alone rather than doubled up. RAW
+     holds the keys that are machine values, not labels, and must never be
+     joined. */
+  const RAW = { locale: 1 };
+
+  /* Thai only, deliberately. These are not labels: some are fragments that get
+     built into a sentence somewhere else (`{n} {noun} of {total}`), where two
+     languages would read as gibberish once they are joined; the rest are
+     counts and a placeholder, where the box is narrower than a bilingual line
+     and the number already says the thing. */
+  const SOLO = {
+    countMain: 1, item: 1, items: 1, row: 1, rows: 1,
+    sizeColorRow: 1, sizeColorRows: 1, itemSuffix: 1, itemsSuffix: 1,
+    unitsLine: 1, rowsLowLine: 1, rowsZeroLine: 1,
+    searchPlaceholder: 1
+  };
 
   function t(key) {
-    const d = I18N[lang] || I18N.en;
-    return d[key] !== undefined ? d[key] : (I18N.en[key] !== undefined ? I18N.en[key] : key);
+    const th = I18N.th ? I18N.th[key] : undefined;
+    const en = I18N.en ? I18N.en[key] : undefined;
+    if (RAW[key] || SOLO[key]) return th !== undefined ? th : (en !== undefined ? en : key);
+    if (th === undefined && en === undefined) return key;
+    if (th === undefined) return en;
+    if (en === undefined) return th;
+    const a = String(th).trim(), b = String(en).trim();
+    if (!a) return b;
+    if (!b) return a;
+    if (a === b || a.indexOf(b) !== -1) return a;
+    return a + " · " + b;
+  }
+
+  /* The label, written the way the booth order log writes it: the Thai in ink,
+     the English after a middle dot in the softer colour. Built from nodes, not
+     markup, so nothing here can ever be an injection point. */
+  function setLabel(el, key) {
+    if (!el) return;
+    const s = t(key);
+    const i = s.indexOf(" · ");
+    if (i < 0) { el.textContent = s; return; }
+    el.textContent = "";
+    const a = document.createElement("b");
+    a.className = "lbl-th";
+    a.textContent = s.slice(0, i);
+    const b = document.createElement("span");
+    b.className = "lbl-en";
+    b.textContent = " · " + s.slice(i + 3);
+    el.appendChild(a);
+    el.appendChild(b);
   }
 
   function fmt(str, vars) {
@@ -3037,8 +3084,6 @@ table.vtable tfoot td.num { text-align: right; }
     clearBtn: document.getElementById("clearBtn"),
     emptyClearBtn: document.getElementById("emptyClearBtn"),
     expandAllBtn: document.getElementById("expandAllBtn"),
-    langEn: document.getElementById("langEn"),
-    langTh: document.getElementById("langTh"),
     viewGrouped: document.getElementById("viewGrouped"),
     viewFlat: document.getElementById("viewFlat"),
     resultsCount: document.getElementById("resultsCount"),
@@ -4103,51 +4148,24 @@ table.vtable tfoot td.num { text-align: right; }
       el.title = t(el.getAttribute("data-title-key"));
     });
     STATIC_TEXT.forEach(function (pair) {
-      const el = document.getElementById(pair[0]);
-      if (el) el.textContent = t(pair[1]);
+      setLabel(document.getElementById(pair[0]), pair[1]);
     });
     if (typeof Stock !== "undefined") renderConn();
     els.search.placeholder = t("searchPlaceholder");
 
     // Chips get short labels on narrow screens so all four fit
     const narrow = window.matchMedia && window.matchMedia("(max-width: 760px)").matches;
-    document.getElementById("statTotalLabel").textContent = t(narrow ? "statTotalShort" : "statTotalLabel2");
-    document.getElementById("statInLabel").textContent = t(narrow ? "statInShort" : "statInLabel");
-    document.getElementById("statLowLabel").textContent = t(narrow ? "statLowShort" : "statLowLabel");
-    document.getElementById("statOutLabel").textContent = t(narrow ? "statOutShort" : "statOutLabel");
+    setLabel(document.getElementById("statTotalLabel"), narrow ? "statTotalShort" : "statTotalLabel2");
+    setLabel(document.getElementById("statInLabel"), narrow ? "statInShort" : "statInLabel");
+    setLabel(document.getElementById("statLowLabel"), narrow ? "statLowShort" : "statLowLabel");
+    setLabel(document.getElementById("statOutLabel"), narrow ? "statOutShort" : "statOutLabel");
     els.searchClear.setAttribute("aria-label", t("clearSearch"));
     els.toTop.setAttribute("aria-label", t("backToTop"));
     els.modalCloseX.setAttribute("aria-label", t("closeChart"));
     document.getElementById("viewGroup").setAttribute("aria-label", t("viewLabel"));
-    document.getElementById("langGroup").setAttribute("aria-label", t("langLabel"));
     document.body.setAttribute("data-lang", lang);
     document.documentElement.setAttribute("lang", lang);
-    els.langEn.setAttribute("aria-pressed", String(lang === "en"));
-    els.langTh.setAttribute("aria-pressed", String(lang === "th"));
     if (els.overlay.hidden) els.modalTitle.textContent = t("sizeChart");
-  }
-
-  function setLang(next) {
-    if (lang === next) return;
-    lang = next;
-    try { localStorage.setItem(LS_LANG, next); } catch (e) {}
-    buildFormatters();
-    // Status labels are cached on the item objects, so refresh them
-    state.items.forEach(function (i) {
-      i.status = getItemStatus(i);
-      Object.keys(i.sizeState).forEach(function (sz) {
-        i.sizeState[sz].status = getStatus(i.sizeState[sz].qty);
-      });
-    });
-    applyStaticI18n();
-    renderFilterOptions(state.records);
-    renderHintLine();
-    syncControls();
-    renderHead();
-    renderSortOptions();
-    render();
-    updateSyncStamp();
-    if (openChartKey) renderChart(openChartKey);
   }
 
   function updateSyncStamp() {
@@ -4240,8 +4258,6 @@ table.vtable tfoot td.num { text-align: right; }
   els.form.addEventListener("submit", function (e) { e.preventDefault(); });
   els.clearBtn.addEventListener("click", resetFilters);
   els.emptyClearBtn.addEventListener("click", resetFilters);
-  els.langEn.addEventListener("click", function () { setLang("en"); });
-  els.langTh.addEventListener("click", function () { setLang("th"); });
   els.viewGrouped.addEventListener("click", function () { setView("grouped"); });
   els.viewFlat.addEventListener("click", function () { setView("flat"); });
 
