@@ -11,5 +11,15 @@
 window.APPEAL_CONFIG = {
   /* Blank hides the line under the PIN box. Put a sentence here if you ever
      want one back. */
-  pinHint: ""
+  pinHint: "",
+
+  /* The sheet's web app address. It ships with the page so the plain link
+     works on any device, anywhere, and the only thing ever asked for is a PIN.
+
+     This is deliberately public and it is not a key. Every call to it is
+     refused without a PIN the sheet recognises, the reply carries nothing
+     until one is, and the sheet slows down wrong PINs so guessing at it is
+     hopeless. The PIN is the thing that protects the stock — keep every PIN
+     six digits, and change them in ตั้งค่า on the page, never in this file. */
+  apiUrl: "https://script.google.com/macros/s/AKfycbwODucxbNL6l2GngosqoU_mHUA2Dq9Cy79h-M2xTvSxjYbkyQXq6znNejpAZFrRwJIB/exec"
 };
