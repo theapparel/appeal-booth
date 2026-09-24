@@ -1808,6 +1808,12 @@ table.vtable tfoot td.num { text-align: right; }
     defaultLang: "th",      // "en" or "th" — staff read Thai, so that is the default
     dataUrl: (window.APPEAL_CONFIG && window.APPEAL_CONFIG.dataUrl) || "data/stock.csv",
     eventUrl: (window.APPEAL_CONFIG && window.APPEAL_CONFIG.eventUrl) || "data/event.json",
+    /* The sheet's address ships with the page, so the plain link works on any
+       device and the only thing asked for is a PIN. Nothing here is a secret
+       key: every call to it is refused without a PIN the sheet recognises, and
+       wrong PINs are slowed down at the sheet. A connection link still wins
+       over this, which is how a phone follows a new deployment. */
+    apiUrl: (window.APPEAL_CONFIG && window.APPEAL_CONFIG.apiUrl) || "",
     currency: "THB",
     currencySymbol: "\u0e3f"
   };
@@ -5051,7 +5057,7 @@ table.vtable tfoot td.num { text-align: right; }
   }
 
   function wireStock() {
-    Stock.url = lsGet(LS_API, "");
+    Stock.url = lsGet(LS_API, "") || CONFIG.apiUrl;
     const session = window.APPEAL_SESSION || {};
     Stock.pin = session.pin || "";
     Stock.by = session.name || "";
@@ -5243,12 +5249,14 @@ table.vtable tfoot td.num { text-align: right; }
   const already = saved();
   if (already) { open(already); return; }
 
-  /* Without a connection link there is nothing to sign in to, so the PIN box
-     and the button come off the screen entirely rather than sitting there
-     failing. The only way in is the link, which is the point: a page that never
-     asks for the sheet address is a page nobody can be tricked into feeding a
-     different one. */
-  const storedUrl = ls(LS_API, "");
+  /* The address ships with the page, so the plain link works on any phone and
+     the only thing ever asked for is a PIN. A connection link still overrides
+     it, which is how a device follows a new deployment before the page catches
+     up. If neither is there — config.js failed to load — the PIN box and the
+     button come off the screen rather than sitting there failing, and still
+     nothing asks anybody to type an address. */
+  const storedUrl = ls(LS_API, "") ||
+                    (EXEC_RE.test(CFG.apiUrl || "") ? CFG.apiUrl : "");
   document.body.style.overflow = "hidden";
   if (!storedUrl) {
     noLink.hidden = false;
