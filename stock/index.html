@@ -2023,7 +2023,7 @@ table.vtable tfoot td.num { text-align: right; }
       adminDateLabel: "Counted on",
       adminLowLabel: "Low stock at (pieces left)",
       adminStaffH: "People and PINs",
-      adminStaffNote: "A PIN is never shown back \u2014 leave a box empty to keep that person\u2019s PIN as it is. Remove someone by deleting their row. Six digits or more.",
+      adminStaffNote: "PINs are shown because you are signed in as the owner \u2014 keep this screen to yourself. Type over one to change it, leave a box empty to keep it as it is, and remove someone by deleting their row. Six digits or more.",
       adminAddStaff: "Add a person",
       adminOwnerLabel: "Owner PIN (leave empty to keep it)",
       adminSaveBtn: "Save",
@@ -2240,7 +2240,7 @@ table.vtable tfoot td.num { text-align: right; }
       adminDateLabel: "วันที่นับ",
       adminLowLabel: "เตือนเหลือน้อยเมื่อเหลือ (ชิ้น)",
       adminStaffH: "คน และรหัส",
-      adminStaffNote: "ระบบจะไม่แสดงรหัสเดิมกลับมา — เว้นว่างไว้คือใช้รหัสเดิม ถ้าจะเอาคนออกให้ลบทั้งแถว · ควรใช้ 6 หลักขึ้นไป",
+      adminStaffNote: "เห็นรหัสได้เพราะเข้าใช้เป็นเจ้าของ — อย่าให้คนอื่นเห็นหน้านี้ · พิมพ์ทับเพื่อเปลี่ยน เว้นว่างไว้คือใช้รหัสเดิม ถ้าจะเอาคนออกให้ลบทั้งแถว · ควรใช้ 6 หลักขึ้นไป",
       adminAddStaff: "เพิ่มคน",
       adminOwnerLabel: "รหัสเจ้าของ (เว้นว่าง = ไม่เปลี่ยน)",
       adminSaveBtn: "บันทึก",
@@ -4595,7 +4595,7 @@ table.vtable tfoot td.num { text-align: right; }
     return row;
   }
 
-  function adminStaffRow(name) {
+  function adminStaffRow(name, pin0) {
     const row = document.createElement("div");
     row.className = "admin-row";
     const n = document.createElement("input");
@@ -4609,6 +4609,7 @@ table.vtable tfoot td.num { text-align: right; }
     pin.inputMode = "numeric";
     pin.autocomplete = "off";
     pin.placeholder = t("adminPinPh");
+    pin.value = pin0 || "";
     row.appendChild(n);
     row.appendChild(pin);
     row.appendChild(adminRowIcon(function () { row.remove(); }));
@@ -4658,8 +4659,11 @@ table.vtable tfoot td.num { text-align: right; }
 
     const stBox = document.getElementById("adminStaff");
     stBox.innerHTML = "";
-    (data.staff || []).forEach(function (p) { stBox.appendChild(adminStaffRow(p.name)); });
-    document.getElementById("adminOwnerPin").value = "";
+    (data.staff || []).forEach(function (p) { stBox.appendChild(adminStaffRow(p.name, p.pin)); });
+    /* The owner asked to be able to read these back, so the sheet sends them and
+       the boxes show them. Clearing one still means "leave it as it was" — the
+       way to take somebody off the list is to delete their row. */
+    document.getElementById("adminOwnerPin").value = data.adminPin || "";
   }
 
   function openAdmin() {
