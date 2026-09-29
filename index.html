@@ -504,6 +504,10 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
         <div class="band">
           <p class="band-label"><span class="step">3</span>เงิน · Payment</p>
           <div class="grid">
+            <div class="field" id="promoWrap" hidden>
+              <label for="f-promo"><b>โปรโมชั่น</b> · Promotion <span class="fmt">(ใช้ได้ทีละ 1 โปร)</span></label>
+              <select id="f-promo"></select>
+            </div>
             <div class="field">
               <label for="f-disc"><b>ส่วนลด</b> · Discount (ทั้งออเดอร์)</label>
               <div class="disc">
@@ -671,9 +675,20 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
       <button type="button" class="btn btn-sm" id="exportAll">ดาวน์โหลดทั้งหมด</button>
     </div>
     <div class="field">
-      <label for="e-promo">โปรโมชั่น · Promotion <span class="fmt">(จำนวนชิ้น=% เช่น 2=5, 3=10)</span></label>
+      <label for="e-promos">โปรโมชั่นรายสาขา · Promotions <span class="fmt">(งาน | ชนิด | ค่า | ป้าย)</span></label>
+      <textarea id="e-promos" style="min-height:120px" placeholder="TMGBK 1F | tier | 3=10 | 3 ชิ้นขึ้นไป ลด 10%"></textarea>
+      <p class="note">หนึ่งบรรทัด = หนึ่งโปร · ใช้ <code>*</code> แทนทุกสาขา · <b>ลูกค้าได้โปรเดียวต่อ 1 ออเดอร์</b> ถ้าเข้าเงื่อนไขหลายโปร พนักงานเลือกเอง</p>
+      <p class="note">ชนิด: <code>tier</code> = ตามจำนวนชิ้น (<code>2=5, 3=10</code>) · <code>pct</code> = ลด % เฉพาะกลุ่ม (<code>group=SWIM; off=50</code>) · <code>bogo</code> = ซื้อ X แถม Y (<code>group=FC; buy=2; free=1</code> — ชิ้นที่ถูกที่สุดเป็นของแถม)</p>
+    </div>
+    <div class="field">
+      <label for="e-groups">กลุ่มสินค้า · Product groups <span class="fmt">(ชื่อกลุ่ม = SKU, SKU, SKU)</span></label>
+      <textarea id="e-groups" style="min-height:90px" placeholder="FC = CSAP001 (CITY BRA), CSAP004 (NOW HERE BRA)"></textarea>
+      <p class="note">ใช้คู่กับโปรชนิด <code>pct</code> และ <code>bogo</code> · <b>กลุ่มที่ยังว่าง = โปรนั้นจะไม่ทำงาน</b> (ปลอดภัยกว่าเดาว่าสินค้าไหนเข้าข่าย) · ชื่อ SKU ต้องตรงกับในลิสต์</p>
+    </div>
+    <div class="field">
+      <label for="e-promo">โปรเดิม (ทุกสาขา) · Legacy promo <span class="fmt">(จำนวนชิ้น=%)</span></label>
       <input type="text" id="e-promo" autocomplete="off" placeholder="2=5, 3=10">
-      <p class="note">ระบบจะใส่ส่วนลดให้อัตโนมัติตามจำนวนชิ้นรวมในออเดอร์ · เว้นว่าง = ไม่มีโปร</p>
+      <p class="note">ใช้เฉพาะตอนที่ช่อง "โปรโมชั่นรายสาขา" ว่าง</p>
     </div>
     <div class="field">
       <label for="e-pin">รหัสเจ้าของ · Owner PIN <span class="fmt">(เว้นว่าง = ไม่ล็อก)</span></label>
@@ -761,6 +776,8 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
     sizes:  ["XS","S","M","L","XL","XXL","Free size"],
     nats:   ["Thai","Chinese","Japanese","Korean","Russian","American","British","German","French","Australian","Indian","Singaporean","Malaysian"],
     promo:  "2=5, 3=10",
+    promos: "",
+    groups: "",
     variants: "1145 (EASY RUNNING SHORTS)=Blue Beach, Grey, Black\nP118 (BEACH BOARDSHORTS)=Brick, Grey, Navy, Black, White\nBWL004 (EVERYDAY SHIRT)=Black, White, Sand\nBWL005 (HOLIDAY STRIPE SHIRT)=Blue Beach, Palm Paradise, Sandy Coasts, Triple Hill\nAPR BIKER (APR BIKER)=Pink, Navy, Black, Brown\nAPRL Polo (APRL POLO)=Navy\nASP013 (SEARCH PANTS)=Black, Muted Pink, Brown\nASP016 (UV JACKET)=Cream, White\nCSAP001 (CITY BRA)=Cream\nCSAP004 (NOW HERE BRA)=Brown\nCSAP008 (CAMP SHORTS)=Cream\nCSAP009 (SANDTONE PANTS)=Brown\nP128 (JOY VIBE SKIRT)=Midnight, White, Purple, Blue Mist\nP125 (JOY VIBE TOP)=Blue Mist, Purple, Midnight\nTime Pants (TIME PANTS)=Orange\nTrain Time Tight (TRAIN TIME TIGHT PANTS)=Wine, Blue Beach, Green\nUltra Move Capri (ULTRA MOVE CAPRI)=Iris, Forest, Black, Wine, Blue\nAC038 (BANDANA)=Alive, Blissful Blue, Ease, Golden Glow, Midnight, Reef, Beach Paradise\nCC019 (BOARDSHORTS)=White Coconut, Navy Coconut, Navy Turtle, Wave Rider, Villa Breeze, Sunny en Route, Sea เก่า, Palm เก่า\nCC026 (SUMMER BEACH SHIRT)=White Coconut, Navy Coconut, Navy Turtle, Wave Rider, Villa Breeze, Sunny en Route, Sea เก่า\nCC028 (SUMMER BEACH SHIRT)=Sun, Sky, Sea, Palm\nCC035 (BOARDSHORTS)=Sun, Sky, Sea, Palm\nAPT001 (SUMMER TEE)=Meaning, Club, Activity, The Summer Sun, Sea lobster, Quad Islands\nAPT002 (SUMMER TEE)=AP-01Sunrise, AP-02SeaSky, AP-05Palm\nAPT004 (SUMMER TEE)=CULT-01Ocean, CULT-02Sunrise, CULT-03Sunrise Ocean, CULT-04Midnight\nCC027 (SUMMER HOLIDAY DREAMS)=Sunrise Whisper, The Andaman Blue, Tropical melt, Island solitude\nCCKID019 (KIDS BOARDSHORTS)=White Coconut, Navy Coconut, Navy Turtle\nCCKID026 (KIDS SUMMER BEACH SHIRT)=White Coconut, Navy Coconut, Navy Turtle\nAC028 (ADVENTURE CAP)=Brick, Black, Grey, Navy, Cream\nAC029 (SUMMER CAP)=Good surfing, Love! This's brown, Manta, Oh! Red, Right! My blue, Sea lobster\nAC039 (SUMMER CAP)=Coastal Club",
     prices: "1145 (EASY RUNNING SHORTS)=890\nP118 (BEACH BOARDSHORTS)=890\nBWL004 (EVERYDAY SHIRT)=890\nBWL005 (HOLIDAY STRIPE SHIRT)=990\nAPR BIKER (APR BIKER)=990\nAPRL Polo (APRL POLO)=1490\nASP013 (SEARCH PANTS)=1490\nASP016 (UV JACKET)=1190\nCSAP001 (CITY BRA)=1190\nCSAP004 (NOW HERE BRA)=1190\nCSAP008 (CAMP SHORTS)=1290\nCSAP009 (SANDTONE PANTS)=1490\nP128 (JOY VIBE SKIRT)=1290\nP125 (JOY VIBE TOP)=1190\nAC038 (BANDANA)=690\nCC019 (BOARDSHORTS)=890\nCC026 (SUMMER BEACH SHIRT)=1490\nCC028 (SUMMER BEACH SHIRT)=1490\nCC035 (BOARDSHORTS)=890\nAPT001 (SUMMER TEE)=690\nAPT002 (SUMMER TEE)=690\nAPT004 (SUMMER TEE)=690\nCC027 (SUMMER HOLIDAY DREAMS)=1490\nCCKID019 (KIDS BOARDSHORTS)=690\nCCKID026 (KIDS SUMMER BEACH SHIRT)=990\nAC028 (ADVENTURE CAP)=790\nAC029 (SUMMER CAP)=690\nAC039 (SUMMER CAP)=690",
     adminPin: "",
@@ -932,6 +949,8 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
           if(Array.isArray(data.config[k]) && data.config[k].length) lists[k]=data.config[k].slice();
         });
         if(typeof data.config.promo==="string") lists.promo=data.config.promo;
+        lists.promos = typeof data.config.promos==="string" ? data.config.promos : "";
+        lists.groups = typeof data.config.groups==="string" ? data.config.groups : "";
         if(typeof data.config.prices==="string" && data.config.prices) lists.prices=data.config.prices;
         if(typeof data.config.variants==="string" && data.config.variants) lists.variants=data.config.variants;
         /* The PIN values come back only for the owner; everyone else gets the
@@ -1152,6 +1171,11 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
     $("f-model").value=""; $("f-model-other").value=""; $("f-model-other").hidden=true;
     $("f-color-other").value=""; $("f-color-other").hidden=true;
     refreshColors();
+    /* refreshColors keeps the current pick when it is still in the list, which
+       left a colour selected after adding to the basket — enough for
+       linePartlyFilled() to think a half-typed line was pending, so pressing
+       Save with a full basket complained "Model required". */
+    $("f-color").value="";
     priceTouched=false; $("f-price").classList.remove("auto");
     sel.size=""; renderChips($("c-size"),lists.sizes,"size",true);
   }
@@ -1189,43 +1213,183 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
      Promotion + totals
      ========================================================= */
   function allLines(){ var l=currentLine(); return l ? cart.concat([l]) : cart.slice(); }
-  function promoTiers(){
-    return String(lists.promo||"").split(",").map(function(part){
+  /* =========================================================
+     Promotions — per branch, one per order
+     ---------------------------------------------------------
+     Config key `promos`, one rule per line:
+        <งาน/สาขา> | <ชนิด> | <พารามิเตอร์> | <ป้ายที่พนักงานเห็น>
+     "*" as the branch means every branch. Three kinds:
+        tier  2=5, 3=10            — by piece count, whole basket
+        pct   group=SWIM; off=50   — % off one product group only
+        bogo  group=FC; buy=2; free=1
+     Groups live in `groups`, one per line: NAME = SKU, SKU, SKU.
+     A rule naming a group that is empty or unlisted simply never
+     applies — safer than guessing which products are in it.
+     `promos` empty falls back to the old single `promo` tier string.
+     ========================================================= */
+  function parseTiers(s){
+    return String(s||"").split(",").map(function(part){
       var m=/^\s*(\d+)\s*=\s*(\d+(?:\.\d+)?)\s*$/.exec(part);
       return m ? {q:parseInt(m[1],10), p:parseFloat(m[2])} : null;
     }).filter(Boolean).sort(function(a,b){ return b.q-a.q; });
   }
-  function promoPct(pieces){
-    var t=promoTiers();
-    for(var i=0;i<t.length;i++){ if(pieces>=t[i].q) return t[i].p; }
-    return 0;
-  }
-  function describePromo(){
-    var t=promoTiers().slice().sort(function(a,b){ return a.q-b.q; });
+  function describeTiers(s){
+    var t=parseTiers(s).slice().sort(function(a,b){ return a.q-b.q; });
     if(!t.length) return "";
     return t.map(function(x,i){
       return x.q+" ชิ้น"+(i===t.length-1?"ขึ้นไป":"")+" ลด "+x.p+"%";
     }).join(" · ");
   }
+  function parseParams(s){
+    var o={};
+    String(s||"").split(";").forEach(function(p){
+      var i=p.indexOf("=");
+      if(i<1) return;
+      o[p.slice(0,i).trim().toLowerCase()]=p.slice(i+1).trim();
+    });
+    return o;
+  }
+  function skuGroups(){
+    var g={};
+    String(lists.groups||"").split("\n").forEach(function(line){
+      var i=line.indexOf("=");
+      if(i<1) return;
+      var name=line.slice(0,i).trim().toUpperCase();
+      var skus=line.slice(i+1).split(",").map(function(s){ return s.trim().toLowerCase(); }).filter(Boolean);
+      if(name && skus.length) g[name]=skus;
+    });
+    return g;
+  }
+  function inGroup(model, name){
+    var g=skuGroups()[String(name||"").trim().toUpperCase()];
+    return !!g && g.indexOf(String(model||"").trim().toLowerCase())>=0;
+  }
+  function promoRules(){
+    var raw=String(lists.promos||"").trim();
+    if(!raw){
+      var t=String(lists.promo||"").trim();
+      return t ? [{event:"*", kind:"tier", params:t, label:describeTiers(t)}] : [];
+    }
+    return raw.split("\n").map(function(line){
+      if(!line.trim()) return null;
+      var p=line.split("|");
+      if(p.length<3) return null;
+      var kind=p[1].trim().toLowerCase();
+      if(!kind) return null;
+      var params=p[2].trim();
+      return {
+        event: p[0].trim() || "*",
+        kind: kind,
+        params: params,
+        label: (p.slice(3).join("|").trim()) || (kind==="tier" ? describeTiers(params) : kind)
+      };
+    }).filter(Boolean);
+  }
+  /* One entry per physical piece, so "buy 2 get 1" counts pieces not lines. */
+  function expandUnits(lines){
+    var u=[];
+    lines.forEach(function(l){
+      for(var i=0;i<l.qty;i++) u.push({model:l.model, price:l.price});
+    });
+    return u;
+  }
+  function evalRule(rule, lines){
+    var units=expandUnits(lines);
+    if(!units.length) return null;
+    var total=0; units.forEach(function(u){ total+=u.price; });
+
+    if(rule.kind==="tier"){
+      var tiers=parseTiers(rule.params), pct=0;
+      for(var i=0;i<tiers.length;i++){ if(units.length>=tiers[i].q){ pct=tiers[i].p; break; } }
+      if(!pct) return null;
+      return { cut:r2(total*pct/100), note:"−"+pct+"% · "+units.length+" ชิ้น" };
+    }
+    if(rule.kind==="pct"){
+      var pa=parseParams(rule.params), off=parseFloat(pa.off)||0;
+      if(!off) return null;
+      var elig=units.filter(function(u){ return inGroup(u.model, pa.group); });
+      if(!elig.length) return null;
+      var base=0; elig.forEach(function(u){ base+=u.price; });
+      return { cut:r2(base*off/100), note:"−"+off+"% · "+elig.length+" ชิ้นที่เข้าเงื่อนไข" };
+    }
+    if(rule.kind==="bogo"){
+      var pb=parseParams(rule.params);
+      var buy=parseInt(pb.buy,10)||2, free=parseInt(pb.free,10)||1;
+      /* Cheapest pieces are the free ones — the usual retail rule. */
+      var e=units.filter(function(u){ return inGroup(u.model, pb.group); })
+                 .sort(function(a,b){ return a.price-b.price; });
+      var sets=Math.floor(e.length/(buy+free));
+      if(sets<1) return null;
+      var n=sets*free, cut=0;
+      for(var k=0;k<n;k++) cut+=e[k].price;
+      return { cut:r2(cut), note:"ฟรี "+n+" ชิ้น (ชิ้นที่ถูกที่สุด)" };
+    }
+    return null;
+  }
+  /* Rules for this branch that actually bite on this basket, best first. */
+  function applicablePromos(){
+    var ev=eventValue(), lines=allLines(), out=[];
+    promoRules().forEach(function(r, i){
+      if(r.event!=="*" && r.event!==ev) return;
+      var res=evalRule(r, lines);
+      if(res && res.cut>0) out.push({ i:i, rule:r, cut:res.cut, note:res.note });
+    });
+    out.sort(function(a,b){ return b.cut-a.cut; });
+    return out;
+  }
+  /* Every promo this branch runs, applicable or not — so staff can see what
+     to offer the customer who is one piece short. */
+  function branchPromoText(){
+    var ev=eventValue();
+    var mine=promoRules().filter(function(r){ return r.event==="*" || r.event===ev; });
+    return mine.map(function(r){ return r.label; }).filter(Boolean).join(" · ");
+  }
+
+  var promoPick = "";      /* "" = none chosen; otherwise the rule index */
   function applyPromo(){
-    var pieces=0; allLines().forEach(function(l){ pieces+=l.qty; });
-    var pct=promoPct(pieces), line=$("promoLine");
-    if(discAuto){
-      discMode="pct";
-      $("dPct").setAttribute("aria-pressed","true");
-      $("dThb").setAttribute("aria-pressed","false");
-      $("f-disc").value = pct ? String(pct) : "";
+    var opts=applicablePromos(), sel=$("f-promo"), line=$("promoLine");
+
+    /* Nothing to choose between? Apply it. A real choice? Staff make it —
+       the page must not decide which promotion a customer gets. */
+    var keys=opts.map(function(o){ return String(o.i); });
+    if(promoPick && keys.indexOf(promoPick)<0) promoPick="";
+    /* `discAuto` is false once someone has typed their own ส่วนลด — auto-apply
+       must not reach in and overwrite it. */
+    if(!promoPick && opts.length===1 && discAuto) promoPick=String(opts[0].i);
+
+    sel.innerHTML="";
+    var none=document.createElement("option");
+    none.value=""; none.textContent = opts.length ? "— ไม่ใช้โปร · No promo —" : "— ไม่มีโปรที่ใช้ได้ —";
+    sel.appendChild(none);
+    opts.forEach(function(o){
+      var op=document.createElement("option");
+      op.value=String(o.i);
+      op.textContent=o.rule.label+"  −"+money(o.cut)+"฿";
+      sel.appendChild(op);
+    });
+    sel.value=promoPick;
+    sel.disabled = !opts.length;
+    $("promoWrap").hidden = !promoRules().length;
+
+    var chosen=opts.filter(function(o){ return String(o.i)===promoPick; })[0];
+    if(chosen){
+      discAuto=true;
+      discMode="thb";
+      $("dThb").setAttribute("aria-pressed","true");
+      $("dPct").setAttribute("aria-pressed","false");
+      $("f-disc").value=String(chosen.cut);
+    } else if(discAuto){
+      $("f-disc").value="";
     }
-    var rules=describePromo();
-    if(!rules){ line.innerHTML=""; return; }
-    if(!discAuto){
-      line.innerHTML='<span>โปร: '+esc(rules)+'</span><button type="button" id="promoBack">ใช้โปรอัตโนมัติ</button>';
-      $("promoBack").addEventListener("click",function(){ discAuto=true; refreshTotals(); });
-    } else if(pct){
-      line.innerHTML='<span class="on">✓ ใช้โปรแล้ว −'+pct+'% ('+pieces+' ชิ้น)</span>';
-    } else {
+
+    var rules=branchPromoText();
+    if(chosen){
+      line.innerHTML='<span class="on">✓ '+esc(chosen.rule.label)+' · '+esc(chosen.note)+'</span>';
+    } else if(opts.length>1){
+      line.innerHTML='<span>มีโปรที่ใช้ได้ '+opts.length+' รายการ — เลือก 1 โปร (ใช้ร่วมกันไม่ได้)</span>';
+    } else if(rules){
       line.innerHTML='<span>โปร: '+esc(rules)+'</span>';
-    }
+    } else line.innerHTML="";
   }
   function compute(){
     var lines=allLines();
@@ -1502,7 +1666,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
   }
   function resetOrder(){
     cart=[]; clearLineFields(); renderBasket();
-    discAuto=true; $("f-disc").value=""; $("f-nat").value=""; $("f-nat-other").value=""; $("f-nat-other").hidden=true; $("f-note").value="";
+    discAuto=true; promoPick=""; $("f-disc").value=""; $("f-nat").value=""; $("f-nat-other").value=""; $("f-nat-other").hidden=true; $("f-note").value="";
     sel.thai=""; sel.gender=""; sel.age="";
     renderChips($("c-thai"),THAI,"thai");
     renderChips($("c-gender"),GENDER,"gender");
@@ -1655,6 +1819,8 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
     $("e-staffpins").value=lists.staffPins||"";
     $("pinStale").hidden = serverKnowsPins;
     $("e-promo").value=lists.promo||"";
+    $("e-promos").value=lists.promos||"";
+    $("e-groups").value=lists.groups||"";
     $("e-prices").value=lists.prices||"";
     $("e-variants").value=lists.variants||"";
     $("allCount").textContent="ทุกงาน ทุกวัน — "+rows.length.toLocaleString()+" รายการ · backend only";
@@ -1694,7 +1860,9 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
   $("f-event").addEventListener("change",function(){
     $("f-event-other").hidden = !isOtherOpt(this.value);
     if(!isOtherOpt(this.value)) $("f-event-other").value="";
+    promoPick=""; refreshTotals();   /* a different branch runs different promos */
   });
+  $("f-promo").addEventListener("change",function(){ promoPick=this.value; discAuto=true; refreshTotals(); });
   ["f-model","f-color","f-price","f-event","f-event-other","f-model-other","f-color-other"].forEach(function(id){
     $(id).addEventListener("input", function(){ this.classList.remove("bad"); });
     $(id).addEventListener("change", function(){ this.classList.remove("bad"); });
@@ -1717,7 +1885,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
     $("f-price").classList.remove("auto");
     refreshTotals();
   });
-  $("f-disc").addEventListener("input",function(){ discAuto=false; refreshTotals(); });
+  $("f-disc").addEventListener("input",function(){ discAuto=false; promoPick=""; refreshTotals(); });
   $("f-date").addEventListener("change",refreshTotals);
   $("f-nat").addEventListener("input",onNatChange);
   $("f-nat").addEventListener("change",onNatChange);
@@ -1802,6 +1970,8 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
     lists.hasAdminPin=!!lists.adminPin;
     lists.hasStaffPins=Object.keys(staffMap()).length>0;
     lists.promo=$("e-promo").value.trim();
+    lists.promos=$("e-promos").value.trim();
+    lists.groups=$("e-groups").value.trim();
     lists.prices=$("e-prices").value.trim();
     lists.variants=$("e-variants").value.trim();
     var wantedPins=lists.staffPins;
