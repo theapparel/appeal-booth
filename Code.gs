@@ -55,7 +55,7 @@ function configSheet_() {
     sh.setFrozenRows(1);
     var seed = [
       ["events", "EMP SPM 2F 10SEP-23SEP"],
-      ["pics", "อีฟ (ชนัญญา พูนบำเพ็ญ)"],
+      ["pics", "นุ่น (วรรณิกา ธาราชัย)"],
       ["models", "1145 (EASY RUNNING SHORTS)\nP118 (BEACH BOARDSHORTS)\nBWL004 (EVERYDAY SHIRT)\nBWL005 (HOLIDAY STRIPE SHIRT)\nAPR BIKER (APR BIKER)\nAPRL Polo (APRL POLO)\nASP013 (SEARCH PANTS)\nASP016 (UV JACKET)\nCSAP001 (CITY BRA)\nCSAP004 (NOW HERE BRA)\nCSAP008 (CAMP SHORTS)\nCSAP009 (SANDTONE PANTS)\nP128 (JOY VIBE SKIRT)\nP125 (JOY VIBE TOP)\nTime Pants (TIME PANTS)\nTrain Time Tight (TRAIN TIME TIGHT PANTS)\nUltra Move Capri (ULTRA MOVE CAPRI)\nAC038 (BANDANA)\nCC019 (BOARDSHORTS)\nCC026 (SUMMER BEACH SHIRT)\nCC028 (SUMMER BEACH SHIRT)\nCC035 (BOARDSHORTS)\nAPT001 (SUMMER TEE)\nAPT002 (SUMMER TEE)\nAPT004 (SUMMER TEE)\nCC027 (SUMMER HOLIDAY DREAMS)\nCCKID019 (KIDS BOARDSHORTS)\nCCKID026 (KIDS SUMMER BEACH SHIRT)\nAC028 (ADVENTURE CAP)\nAC029 (SUMMER CAP)\nAC039 (SUMMER CAP)"],
       ["colors", "Blue Beach\nGrey\nBlack\nBrick\nNavy\nWhite\nSand\nPalm Paradise\nSandy Coasts\nTriple Hill\nPink\nBrown\nMuted Pink\nCream\nMidnight\nPurple\nBlue Mist\nOrange\nWine\nGreen\nIris\nForest\nBlue\nAlive\nBlissful Blue\nEase\nGolden Glow\nReef\nBeach Paradise\nWhite Coconut\nNavy Coconut\nNavy Turtle\nWave Rider\nVilla Breeze\nSunny en Route\nSea เก่า\nPalm เก่า\nSun\nSky\nMeaning\nClub\nActivity\nThe Summer Sun\nSea lobster\nQuad Islands\nAP-01Sunrise\nAP-02SeaSky\nAP-05Palm\nCULT-01Ocean\nCULT-02Sunrise\nCULT-03Sunrise Ocean\nCULT-04Midnight\nSunrise Whisper\nThe Andaman Blue\nTropical melt\nIsland solitude\nGood surfing\nLove! This's brown\nManta\nOh! Red\nRight! My blue\nCoastal Club\nSea\nPalm"],
       ["sizes", "XS\nS\nM\nL\nXL\nXXL\nFree size"],
@@ -64,7 +64,7 @@ function configSheet_() {
       ["variants", "1145 (EASY RUNNING SHORTS)=Blue Beach, Grey, Black\nP118 (BEACH BOARDSHORTS)=Brick, Grey, Navy, Black, White\nBWL004 (EVERYDAY SHIRT)=Black, White, Sand\nBWL005 (HOLIDAY STRIPE SHIRT)=Blue Beach, Palm Paradise, Sandy Coasts, Triple Hill\nAPR BIKER (APR BIKER)=Pink, Navy, Black, Brown\nAPRL Polo (APRL POLO)=Navy\nASP013 (SEARCH PANTS)=Black, Muted Pink, Brown\nASP016 (UV JACKET)=Cream, White\nCSAP001 (CITY BRA)=Cream\nCSAP004 (NOW HERE BRA)=Brown\nCSAP008 (CAMP SHORTS)=Cream\nCSAP009 (SANDTONE PANTS)=Brown\nP128 (JOY VIBE SKIRT)=Midnight, White, Purple, Blue Mist\nP125 (JOY VIBE TOP)=Blue Mist, Purple, Midnight\nTime Pants (TIME PANTS)=Orange\nTrain Time Tight (TRAIN TIME TIGHT PANTS)=Wine, Blue Beach, Green\nUltra Move Capri (ULTRA MOVE CAPRI)=Iris, Forest, Black, Wine, Blue\nAC038 (BANDANA)=Alive, Blissful Blue, Ease, Golden Glow, Midnight, Reef, Beach Paradise\nCC019 (BOARDSHORTS)=White Coconut, Navy Coconut, Navy Turtle, Wave Rider, Villa Breeze, Sunny en Route, Sea เก่า, Palm เก่า\nCC026 (SUMMER BEACH SHIRT)=White Coconut, Navy Coconut, Navy Turtle, Wave Rider, Villa Breeze, Sunny en Route, Sea เก่า\nCC028 (SUMMER BEACH SHIRT)=Sun, Sky, Sea, Palm\nCC035 (BOARDSHORTS)=Sun, Sky, Sea, Palm\nAPT001 (SUMMER TEE)=Meaning, Club, Activity, The Summer Sun, Sea lobster, Quad Islands\nAPT002 (SUMMER TEE)=AP-01Sunrise, AP-02SeaSky, AP-05Palm\nAPT004 (SUMMER TEE)=CULT-01Ocean, CULT-02Sunrise, CULT-03Sunrise Ocean, CULT-04Midnight\nCC027 (SUMMER HOLIDAY DREAMS)=Sunrise Whisper, The Andaman Blue, Tropical melt, Island solitude\nCCKID019 (KIDS BOARDSHORTS)=White Coconut, Navy Coconut, Navy Turtle\nCCKID026 (KIDS SUMMER BEACH SHIRT)=White Coconut, Navy Coconut, Navy Turtle\nAC028 (ADVENTURE CAP)=Brick, Black, Grey, Navy, Cream\nAC029 (SUMMER CAP)=Good surfing, Love! This's brown, Manta, Oh! Red, Right! My blue, Sea lobster\nAC039 (SUMMER CAP)=Coastal Club"],
       ["prices", "1145 (EASY RUNNING SHORTS)=890\nP118 (BEACH BOARDSHORTS)=890\nBWL004 (EVERYDAY SHIRT)=890\nBWL005 (HOLIDAY STRIPE SHIRT)=990\nAPR BIKER (APR BIKER)=990\nAPRL Polo (APRL POLO)=1490\nASP013 (SEARCH PANTS)=1490\nASP016 (UV JACKET)=1190\nCSAP001 (CITY BRA)=1190\nCSAP004 (NOW HERE BRA)=1190\nCSAP008 (CAMP SHORTS)=1290\nCSAP009 (SANDTONE PANTS)=1490\nP128 (JOY VIBE SKIRT)=1290\nP125 (JOY VIBE TOP)=1190\nAC038 (BANDANA)=690\nCC019 (BOARDSHORTS)=890\nCC026 (SUMMER BEACH SHIRT)=1490\nCC028 (SUMMER BEACH SHIRT)=1490\nCC035 (BOARDSHORTS)=890\nAPT001 (SUMMER TEE)=690\nAPT002 (SUMMER TEE)=690\nAPT004 (SUMMER TEE)=690\nCC027 (SUMMER HOLIDAY DREAMS)=1490\nCCKID019 (KIDS BOARDSHORTS)=690\nCCKID026 (KIDS SUMMER BEACH SHIRT)=990\nAC028 (ADVENTURE CAP)=790\nAC029 (SUMMER CAP)=690\nAC039 (SUMMER CAP)=690"],
       ["adminPin", ""],
-      ["staffPins", ""]
+      ["staffPins", "อีฟ (ชนัญญา พูนบำเพ็ญ)=9182\nนุ่น (วรรณิกา ธาราชัย)=0331"]
     ];
     sh.getRange(2, 1, seed.length, 2).setValues(seed);
     sh.setColumnWidth(2, 420);
@@ -105,19 +105,32 @@ function writeConfig_(cfg) {
 /* ---------- who is asking ----------
  * Config holds two kinds of PIN:
  *   adminPin  — the owner. Sees every row, every day, and can edit settings.
- *   staffPins — one line per seller, "ชื่อ=PIN". Sees only their own rows, today.
+ *   staffPins — one line per seller, "ชื่อ=PIN=งาน". Sees only their own rows,
+ *               at their own branch, today. Several branches: comma-separated.
+ *               The branch is optional; leave it off and they are not
+ *               branch-limited, which is how every line read before 29 Sep.
  * With neither set the log is open to anyone with the URL, as it was before.   */
 
 function staffMap_(cfg) {
   var map = {};
   String(cfg.staffPins || '').split('\n').forEach(function (line) {
-    var i = line.lastIndexOf('=');
-    if (i < 1) return;
-    var name = line.slice(0, i).trim();
-    var pin  = line.slice(i + 1).trim();
-    if (name && pin) map[pin] = name;
+    var parts = String(line).split('=');
+    if (parts.length < 2) return;
+    var name = String(parts[0]).trim();
+    var pin  = String(parts[1]).trim();
+    /* Anything after the second '=' is the branch list, so an event name
+     * containing '=' survives being rejoined. */
+    var rest = parts.slice(2).join('=');
+    var events = String(rest).split(',').map(function (s) { return s.trim(); }).filter(String);
+    if (name && pin) map[pin] = { name: name, events: events };
   });
   return map;
+}
+
+/* No branch listed = every branch, so old two-part lines keep working. */
+function atMyBranch_(who, event) {
+  if (!who.events || !who.events.length) return true;
+  return who.events.indexOf(String(event == null ? '' : event)) >= 0;
 }
 
 /* Four answers:
@@ -131,11 +144,13 @@ function whoIs_(cfg, pin) {
   var admin = String(cfg.adminPin || '').trim();
   var staff = staffMap_(cfg);
   var hasStaff = Object.keys(staff).length > 0;
-  if (admin && pin === admin) return { role: 'owner', name: '' };
-  if (pin && staff[pin]) return { role: 'staff', name: staff[pin] };
-  if (!admin && !hasStaff)  return { role: 'owner', name: '' };
-  if (!hasStaff)            return { role: 'guest', name: '' };
-  return { role: 'none', name: '' };
+  if (admin && pin === admin) return { role: 'owner', name: '', events: [] };
+  if (pin && staff[pin]) {
+    return { role: 'staff', name: staff[pin].name, events: staff[pin].events };
+  }
+  if (!admin && !hasStaff)  return { role: 'owner', name: '', events: [] };
+  if (!hasStaff)            return { role: 'guest', name: '', events: [] };
+  return { role: 'none', name: '', events: [] };
 }
 
 /* The PINs themselves never leave the Sheet unless the owner is asking. */
@@ -150,6 +165,11 @@ function publicConfig_(cfg, who) {
   if (who.role === 'owner') {
     out.adminPin  = cfg.adminPin  || '';
     out.staffPins = cfg.staffPins || '';
+  }
+  /* A seller is only ever offered their own branch, so the Event picker cannot
+   * be set to somewhere they do not work — the commonest silent mis-filing. */
+  if (who.role === 'staff' && who.events && who.events.length) {
+    out.events = who.events.slice();
   }
   return out;
 }
@@ -232,7 +252,11 @@ function doGet(e) {
     var who = whoIs_(cfg, p.pin);
 
     if (action === 'list' || action === 'config') {
-      var out = { ok: true, role: who.role, me: who.name, config: publicConfig_(cfg, who) };
+      var out = {
+        ok: true, role: who.role, me: who.name,
+        myEvents: who.events || [],
+        config: publicConfig_(cfg, who)
+      };
       if (action === 'list') {
         /* The filter is here, not in the page: a seller's browser never
          * receives anyone else's rows in the first place. */
@@ -241,7 +265,7 @@ function doGet(e) {
           out.rows = readOrders_();
         } else if (who.role === 'staff') {
           out.rows = readOrders_().filter(function (r) {
-            return r.pic === who.name && r.date === day;
+            return r.pic === who.name && r.date === day && atMyBranch_(who, r.event);
           });
         } else if (who.role === 'guest') {
           out.rows = readOrders_().filter(function (r) { return r.date === day; });
@@ -273,8 +297,22 @@ function doPost(e) {
     if (body.action === 'addOrder') {
       var sh = ordersSheet_();
       var date = String(body.date || '');
-      var orderNo = nextOrderNo_(sh, date);
       var lines = body.rows || [];
+
+      /* A seller assigned to exactly one branch always files there, whatever
+       * the page sent. With several, it must be one of theirs — a sale filed
+       * to the wrong branch is invisible until the month is reconciled. */
+      if (who.role === 'staff' && who.events && who.events.length) {
+        for (var li = 0; li < lines.length; li++) {
+          if (who.events.length === 1) {
+            lines[li].event = who.events[0];
+          } else if (!atMyBranch_(who, lines[li].event)) {
+            return json_({ ok: false, error: 'not your branch' });
+          }
+        }
+      }
+
+      var orderNo = nextOrderNo_(sh, date);
       var values = lines.map(function (r) {
         r.id = Utilities.getUuid();
         r.orderNo = orderNo;
@@ -299,9 +337,11 @@ function doPost(e) {
           if (String(vals2[i][0]) !== String(body.id)) continue;
           /* Staff may undo their own sale from today, nothing else.
            * The shared guest view may undo anything from today. */
-          var rowPic  = asText_(vals2[i][COLS.indexOf('pic')]);
-          var rowDate = asText_(vals2[i][COLS.indexOf('date')]);
-          if (who.role === 'staff' && (rowPic !== who.name || rowDate !== scopeDate_(body.date))) {
+          var rowPic   = asText_(vals2[i][COLS.indexOf('pic')]);
+          var rowDate  = asText_(vals2[i][COLS.indexOf('date')]);
+          var rowEvent = asText_(vals2[i][COLS.indexOf('event')]);
+          if (who.role === 'staff' &&
+              (rowPic !== who.name || rowDate !== scopeDate_(body.date) || !atMyBranch_(who, rowEvent))) {
             return json_({ ok: false, error: 'not yours' });
           }
           if (who.role === 'guest' && rowDate !== scopeDate_(body.date)) {

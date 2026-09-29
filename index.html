@@ -641,7 +641,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
 <dialog class="sheet" id="signSheet">
   <div class="sheet-hd"><h3>เข้าใช้งาน · Sign in</h3></div>
   <div class="sheet-bd">
-    <p class="note" id="signNote">ใส่รหัสของคุณ · Enter your own PIN. เครื่องนี้จะจำไว้ให้ จนกว่าจะกด <b>ออก</b> — คุณจะเห็นเฉพาะยอดขายของตัวเองในวันนี้.</p>
+    <p class="note" id="signNote">ใส่รหัสของคุณ · Enter your own PIN. เครื่องนี้จะจำไว้ให้ จนกว่าจะกด <b>ออก</b> — คุณจะเห็นเฉพาะยอดขายของตัวเอง ที่สาขาของตัวเอง ในวันนี้.</p>
     <div class="field">
       <label for="f-signpin">PIN</label>
       <input type="password" id="f-signpin" inputmode="numeric" autocomplete="off" placeholder="••••">
@@ -677,13 +677,14 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
     </div>
     <div class="field">
       <label for="e-pin">รหัสเจ้าของ · Owner PIN <span class="fmt">(เว้นว่าง = ไม่ล็อก)</span></label>
-      <input type="text" id="e-pin" inputmode="numeric" autocomplete="off" placeholder="ตัวเลข 6 หลัก">
+      <input type="text" id="e-pin" inputmode="numeric" autocomplete="off" placeholder="เช่น 2468">
       <p class="note">เห็นทุกวัน ทุกคน · แก้ไขและลบรายการได้ · เปิดหน้านี้ได้</p>
     </div>
     <div class="field">
-      <label for="e-staffpins">รหัสรายคน · Staff PINs <span class="fmt">(ชื่อ=PIN ต่อบรรทัด)</span></label>
-      <textarea id="e-staffpins" style="min-height:90px" placeholder="ชื่อพนักงาน=รหัส"></textarea>
-      <p class="note">แต่ละคนใส่รหัสของตัวเองครั้งเดียวต่อเครื่อง · ชื่อผู้ขายจะถูกใส่ให้อัตโนมัติ แก้ไม่ได้ · เห็นเฉพาะยอดของตัวเองวันนี้ ไม่เห็นของคนอื่น · เว้นว่าง = ทุกคนเห็นเหมือนกันหมด</p>
+      <label for="e-staffpins">รหัสรายคน · Staff PINs <span class="fmt">(ชื่อ=PIN=งาน ต่อบรรทัด)</span></label>
+      <textarea id="e-staffpins" style="min-height:110px" placeholder="กัญญ์ (กัญญ์วรา เกศาภายุรัตน์)=3905=EMPSPM 2F 24SEP-7OCT"></textarea>
+      <p class="note">แต่ละคนใส่รหัสของตัวเองครั้งเดียวต่อเครื่อง · <b>ชื่อผู้ขายและงาน/สาขา จะถูกใส่ให้อัตโนมัติ แก้ไม่ได้</b> · เห็นเฉพาะยอดของตัวเอง ที่สาขาของตัวเอง วันนี้เท่านั้น</p>
+      <p class="note">หลายสาขา คั่นด้วยจุลภาค เช่น <code>ปู (อาทิตยา รบอาจ)=9882=TMGBK 1F, EMPSPM 2F 24SEP-7OCT</code> · ไม่ใส่งาน = ไม่จำกัดสาขา · เว้นว่างทั้งหมด = ทุกคนเห็นเหมือนกันหมด</p>
       <p class="note" id="pinStale" style="color:var(--coral)" hidden>เซิร์ฟเวอร์ยังเป็น Code.gs เวอร์ชันเก่า — รหัสรายคนจะยังไม่ทำงานจนกว่าจะวาง Code.gs ใหม่แล้ว Deploy ▸ Manage deployments ▸ Version: New version</p>
     </div>
     <p class="note">หนึ่งบรรทัด = หนึ่งตัวเลือก · One option per line. พนักงานยังพิมพ์ค่าอื่นเองได้เสมอ.</p>
@@ -754,7 +755,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
   /* ---------- defaults (used until the Sheet's Config tab answers) ---------- */
   var DEFAULTS = {
     events: ["EMP SPM 2F 10SEP-23SEP"],
-    pics:   ["อีฟ (ชนัญญา พูนบำเพ็ญ)"],
+    pics:   ["นุ่น (วรรณิกา ธาราชัย)"],
     models: ["1145 (EASY RUNNING SHORTS)","P118 (BEACH BOARDSHORTS)","BWL004 (EVERYDAY SHIRT)","BWL005 (HOLIDAY STRIPE SHIRT)","APR BIKER (APR BIKER)","APRL Polo (APRL POLO)","ASP013 (SEARCH PANTS)","ASP016 (UV JACKET)","CSAP001 (CITY BRA)","CSAP004 (NOW HERE BRA)","CSAP008 (CAMP SHORTS)","CSAP009 (SANDTONE PANTS)","P128 (JOY VIBE SKIRT)","P125 (JOY VIBE TOP)","Time Pants (TIME PANTS)","Train Time Tight (TRAIN TIME TIGHT PANTS)","Ultra Move Capri (ULTRA MOVE CAPRI)","AC038 (BANDANA)","CC019 (BOARDSHORTS)","CC026 (SUMMER BEACH SHIRT)","CC028 (SUMMER BEACH SHIRT)","CC035 (BOARDSHORTS)","APT001 (SUMMER TEE)","APT002 (SUMMER TEE)","APT004 (SUMMER TEE)","CC027 (SUMMER HOLIDAY DREAMS)","CCKID019 (KIDS BOARDSHORTS)","CCKID026 (KIDS SUMMER BEACH SHIRT)","AC028 (ADVENTURE CAP)","AC029 (SUMMER CAP)","AC039 (SUMMER CAP)"],
     colors: ["Blue Beach","Grey","Black","Brick","Navy","White","Sand","Palm Paradise","Sandy Coasts","Triple Hill","Pink","Brown","Muted Pink","Cream","Midnight","Purple","Blue Mist","Orange","Wine","Green","Iris","Forest","Blue","Alive","Blissful Blue","Ease","Golden Glow","Reef","Beach Paradise","White Coconut","Navy Coconut","Navy Turtle","Wave Rider","Villa Breeze","Sunny en Route","Sea เก่า","Palm เก่า","Sun","Sky","Meaning","Club","Activity","The Summer Sun","Sea lobster","Quad Islands","AP-01Sunrise","AP-02SeaSky","AP-05Palm","CULT-01Ocean","CULT-02Sunrise","CULT-03Sunrise Ocean","CULT-04Midnight","Sunrise Whisper","The Andaman Blue","Tropical melt","Island solitude","Good surfing","Love! This's brown","Manta","Oh! Red","Right! My blue","Coastal Club","Sea","Palm"],
     sizes:  ["XS","S","M","L","XL","XXL","Free size"],
@@ -777,19 +778,23 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
   /* ---------- who is at this device ----------
      Each seller has their own PIN. Signing in remembers them on THIS device
      until they press ออก, so it is a one-time setup per PC, not a daily login.
-     A seller sees only their own sales, today. The owner PIN sees everything
-     but is deliberately never remembered — it is re-entered each time. */
-  var me = { role:"none", name:"", pin:"" };
+     A seller sees only their own sales, at their own branch, today. The owner
+     PIN sees everything but is deliberately never remembered — re-entered each
+     time. `events` is the branch or branches that PIN is assigned to. */
+  var me = { role:"none", name:"", pin:"", events:[] };
   function loadMe(){
     try{
       var m=JSON.parse(lsGet(LS_ME)||"null");
-      if(m && m.pin){ me.pin=String(m.pin); me.name=String(m.name||""); me.role="staff"; }
-      else me={role:"none",name:"",pin:""};
-    }catch(_){ me={role:"none",name:"",pin:""}; }
+      if(m && m.pin){
+        me.pin=String(m.pin); me.name=String(m.name||""); me.role="staff";
+        me.events=Array.isArray(m.events)?m.events:[];
+      }
+      else me={role:"none",name:"",pin:"",events:[]};
+    }catch(_){ me={role:"none",name:"",pin:"",events:[]}; }
   }
-  function saveMe(){ lsSet(LS_ME, JSON.stringify({pin:me.pin, name:me.name})); }
+  function saveMe(){ lsSet(LS_ME, JSON.stringify({pin:me.pin, name:me.name, events:me.events||[]})); }
   function forgetMe(){
-    me={role:"none",name:"",pin:""};
+    me={role:"none",name:"",pin:"",events:[]};
     try{ localStorage.removeItem(LS_ME); }catch(_){}
   }
   /* gated      = there is an owner lock of some kind.
@@ -800,15 +805,24 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
   function needsSignIn(){ return !!(lists.hasStaffPins || lists.staffPins); }
   function isOwner(){ return !gated() || me.role==="owner"; }
   function isStaff(){ return me.role==="staff" && !!me.name; }
+  /* "ชื่อ=PIN=งาน" per line; the branch is optional and may be a comma-separated
+     list. Anything after the second "=" is the branch part, so an event name
+     containing "=" survives. */
   function staffMap(){
     var map={};
     String(lists.staffPins||"").split("\n").forEach(function(line){
-      var i=line.lastIndexOf("=");
-      if(i<1) return;
-      var n=line.slice(0,i).trim(), p=line.slice(i+1).trim();
-      if(n&&p) map[p]=n;
+      var parts=String(line).split("=");
+      if(parts.length<2) return;
+      var n=String(parts[0]).trim(), p=String(parts[1]).trim();
+      var ev=String(parts.slice(2).join("=")).split(",").map(function(s){return s.trim();}).filter(Boolean);
+      if(n&&p) map[p]={name:n, events:ev};
     });
     return map;
+  }
+  /* No branch listed = not branch-limited, so older two-part lines still work. */
+  function atMyBranch(ev){
+    if(!me.events || !me.events.length) return true;
+    return me.events.indexOf(String(ev==null?"":ev))>=0;
   }
   var queue = [], busy = false;
 
@@ -899,6 +913,20 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
       rows = (data.rows||[]).slice().sort(function(a,b){
         return String(b.createdAt||"").localeCompare(String(a.createdAt||""));
       });
+      /* Who we are is settled BEFORE the lists are built: applyLists() asks
+         isStaff() to decide whether the Event picker gets an "อื่นๆ" escape
+         hatch, so a stale role here would hand a seller one. */
+      if(typeof data.role==="string"){
+        if(data.role==="none"){ if(me.pin) forgetMe(); }
+        else {
+          me.role=data.role;
+          me.name = data.role==="staff" ? (data.me||me.name||"") : "";
+          if(data.role==="staff"){
+            if(Array.isArray(data.myEvents)) me.events=data.myEvents.slice();
+            if(me.pin) saveMe();      /* keep the remembered branch current */
+          } else me.events=[];
+        }
+      }
       if(data.config){
         ["events","pics","models","colors","sizes","nats"].forEach(function(k){
           if(Array.isArray(data.config[k]) && data.config[k].length) lists[k]=data.config[k].slice();
@@ -914,14 +942,6 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
         lists.hasStaffPins = !!data.config.hasStaffPins || !!lists.staffPins;
         serverKnowsPins = typeof data.config.hasAdminPin !== "undefined";
         applyLists();
-      }
-      /* The server's answer about who we are outranks anything this device thinks. */
-      if(typeof data.role==="string"){
-        if(data.role==="none"){ if(me.pin) forgetMe(); }
-        else {
-          me.role=data.role;
-          me.name = data.role==="staff" ? (data.me||me.name||"") : "";
-        }
       }
       setStatus("live","เชื่อมต่อแล้ว · Google Sheet");
       updateGate();
@@ -981,7 +1001,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
   var OTHER_OPT = "อื่นๆ · Other (พิมพ์เอง)";
   /* A picker beats typing at a booth: fewer taps, no spelling drift in the data.
      The last option always lets staff record something the list doesn't have. */
-  function fillSelect(id, arr, placeholder, keep){
+  function fillSelect(id, arr, placeholder, keep, noOther){
     var el=$(id), had = keep ? el.value : "";
     el.innerHTML="";
     var ph=document.createElement("option");
@@ -989,8 +1009,10 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
     arr.forEach(function(v){
       var o=document.createElement("option"); o.value=v; o.textContent=v; el.appendChild(o);
     });
-    var oth=document.createElement("option");
-    oth.value=OTHER_OPT; oth.textContent=OTHER_OPT; el.appendChild(oth);
+    if(!noOther){
+      var oth=document.createElement("option");
+      oth.value=OTHER_OPT; oth.textContent=OTHER_OPT; el.appendChild(oth);
+    }
     if(had && arr.indexOf(had)>=0) el.value=had;
   }
   /* "SKU (NAME)=Colour, Colour" per line */
@@ -1061,7 +1083,8 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
     return list[list.length-1];
   }
   function applyLists(){
-    fillSelect("f-event", lists.events, "— เลือกงาน · Event —", true);
+    /* Staff get no "อื่นๆ" on Event: branches are assigned, not invented. */
+    fillSelect("f-event", lists.events, "— เลือกงาน · Event —", true, isStaff());
     fillDatalist("l-pics",lists.pics);
     fillSelect("f-model", sortedSkus(), "— เลือกรุ่น / SKU —", true);
     refreshColors();
@@ -1263,6 +1286,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
     var dt   = isOwner() ? null : nowLocal().date;
     return list.filter(function(r){
       if(mine && r.pic!==mine) return false;
+      if(mine && !atMyBranch(r.event)) return false;
       if(dt && r.date!==dt) return false;
       return true;
     });
@@ -1339,7 +1363,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
     $("clearFilterWrap").hidden = !owner;
     $("todayOnly").hidden = owner;
     $("todayOnly").textContent = isStaff() && me.name
-      ? ("ยอดของ "+me.name+" วันนี้ · Your sales today")
+      ? ("ยอดของ "+me.name+(me.events && me.events.length ? " · "+me.events.join(" / ") : "")+" วันนี้ · Your sales today")
       : "ยอดขายวันนี้เท่านั้น · Today only";
     $("ownerBtn").textContent = owner && gated() ? "ล็อก" : "เจ้าของ";
     $("ownerBtn").hidden = !gated();
@@ -1358,9 +1382,18 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
     /* The seller's own name signs the sale; they cannot type someone else in. */
     if(isStaff() && me.name){ $("f-pic").value=me.name; $("f-pic").readOnly=true; $("f-pic").title="ชื่อจากรหัสที่เข้าใช้งาน"; }
     else { $("f-pic").readOnly=false; $("f-pic").title=""; }
+    /* One branch on the PIN means the Event field is settled — showing it as a
+       live picker only invites filing a sale to a branch they don't work at. */
+    var fixed = isStaff() && me.events && me.events.length===1;
+    if(fixed){
+      $("f-event").value = me.events[0];
+      $("f-event-other").hidden = true; $("f-event-other").value="";
+    }
+    $("f-event").disabled = !!fixed;
+    $("f-event").title = fixed ? "สาขาจากรหัสที่เข้าใช้งาน" : "";
   }
   function openSign(note){
-    $("signNote").textContent = note || "ใส่รหัสของคุณ · Enter your own PIN. เครื่องนี้จะจำไว้ให้ จนกว่าจะกด ออก — คุณจะเห็นเฉพาะยอดขายของตัวเองในวันนี้.";
+    $("signNote").textContent = note || "ใส่รหัสของคุณ · Enter your own PIN. เครื่องนี้จะจำไว้ให้ จนกว่าจะกด ออก — คุณจะเห็นเฉพาะยอดขายของตัวเอง ที่สาขาของตัวเอง ในวันนี้.";
     $("signErr").textContent="";
     $("f-signpin").value="";
     if(!$("signSheet").open) $("signSheet").showModal();
@@ -1368,10 +1401,10 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
   }
   /* Guess locally first so the old backend still works, then let the server rule. */
   function localWho(pin){
-    if(lists.adminPin && pin===String(lists.adminPin)) return {role:"owner",name:""};
+    if(lists.adminPin && pin===String(lists.adminPin)) return {role:"owner",name:"",events:[]};
     var m=staffMap();
-    if(m[pin]) return {role:"staff",name:m[pin]};
-    return {role:"none",name:""};
+    if(m[pin]) return {role:"staff", name:m[pin].name, events:m[pin].events||[]};
+    return {role:"none",name:"",events:[]};
   }
   async function trySign(){
     var v=$("f-signpin").value.trim();
