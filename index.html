@@ -681,6 +681,11 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
       <p class="note">ชนิด: <code>tier</code> = ตามจำนวนชิ้น (<code>2=5, 3=10</code>) · <code>pct</code> = ลด % เฉพาะกลุ่ม (<code>group=SWIM; off=50</code>) · <code>bogo</code> = ซื้อ X แถม Y (<code>group=FC; buy=2; free=1</code> — ชิ้นที่ถูกที่สุดเป็นของแถม)</p>
     </div>
     <div class="field">
+      <label for="e-branchmodels">สินค้าประจำสาขา · Stock per branch <span class="fmt">(งาน = SKU, SKU, SKU)</span></label>
+      <textarea id="e-branchmodels" style="min-height:90px" placeholder="TMGBK 1F 30SEP-28OCT = AC028 (ADVENTURE CAP), FC786, P105"></textarea>
+      <p class="note">ช่อง <b>รุ่น / SKU</b> จะเหลือเฉพาะของที่สาขานั้นมีจริง · สาขาที่ไม่ได้ระบุ = เห็นทุกรุ่นในลิสต์ใหญ่</p>
+    </div>
+    <div class="field">
       <label for="e-groups">กลุ่มสินค้า · Product groups <span class="fmt">(ชื่อกลุ่ม = SKU, SKU, SKU)</span></label>
       <textarea id="e-groups" style="min-height:90px" placeholder="FC = CSAP001 (CITY BRA), CSAP004 (NOW HERE BRA)"></textarea>
       <p class="note">ใช้คู่กับโปรชนิด <code>pct</code> และ <code>bogo</code> · <b>กลุ่มที่ยังว่าง = โปรนั้นจะไม่ทำงาน</b> (ปลอดภัยกว่าเดาว่าสินค้าไหนเข้าข่าย) · ชื่อ SKU ต้องตรงกับในลิสต์</p>
@@ -778,6 +783,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
     promo:  "2=5, 3=10",
     promos: "",
     groups: "",
+    branchModels: "",
     variants: "1145 (EASY RUNNING SHORTS)=Blue Beach, Grey, Black\nP118 (BEACH BOARDSHORTS)=Brick, Grey, Navy, Black, White\nBWL004 (EVERYDAY SHIRT)=Black, White, Sand\nBWL005 (HOLIDAY STRIPE SHIRT)=Blue Beach, Palm Paradise, Sandy Coasts, Triple Hill\nAPR BIKER (APR BIKER)=Pink, Navy, Black, Brown\nAPRL Polo (APRL POLO)=Navy\nASP013 (SEARCH PANTS)=Black, Muted Pink, Brown\nASP016 (UV JACKET)=Cream, White\nCSAP001 (CITY BRA)=Cream\nCSAP004 (NOW HERE BRA)=Brown\nCSAP008 (CAMP SHORTS)=Cream\nCSAP009 (SANDTONE PANTS)=Brown\nP128 (JOY VIBE SKIRT)=Midnight, White, Purple, Blue Mist\nP125 (JOY VIBE TOP)=Blue Mist, Purple, Midnight\nTime Pants (TIME PANTS)=Orange\nTrain Time Tight (TRAIN TIME TIGHT PANTS)=Wine, Blue Beach, Green\nUltra Move Capri (ULTRA MOVE CAPRI)=Iris, Forest, Black, Wine, Blue\nAC038 (BANDANA)=Alive, Blissful Blue, Ease, Golden Glow, Midnight, Reef, Beach Paradise\nCC019 (BOARDSHORTS)=White Coconut, Navy Coconut, Navy Turtle, Wave Rider, Villa Breeze, Sunny en Route, Sea เก่า, Palm เก่า\nCC026 (SUMMER BEACH SHIRT)=White Coconut, Navy Coconut, Navy Turtle, Wave Rider, Villa Breeze, Sunny en Route, Sea เก่า\nCC028 (SUMMER BEACH SHIRT)=Sun, Sky, Sea, Palm\nCC035 (BOARDSHORTS)=Sun, Sky, Sea, Palm\nAPT001 (SUMMER TEE)=Meaning, Club, Activity, The Summer Sun, Sea lobster, Quad Islands\nAPT002 (SUMMER TEE)=AP-01Sunrise, AP-02SeaSky, AP-05Palm\nAPT004 (SUMMER TEE)=CULT-01Ocean, CULT-02Sunrise, CULT-03Sunrise Ocean, CULT-04Midnight\nCC027 (SUMMER HOLIDAY DREAMS)=Sunrise Whisper, The Andaman Blue, Tropical melt, Island solitude\nCCKID019 (KIDS BOARDSHORTS)=White Coconut, Navy Coconut, Navy Turtle\nCCKID026 (KIDS SUMMER BEACH SHIRT)=White Coconut, Navy Coconut, Navy Turtle\nAC028 (ADVENTURE CAP)=Brick, Black, Grey, Navy, Cream\nAC029 (SUMMER CAP)=Good surfing, Love! This's brown, Manta, Oh! Red, Right! My blue, Sea lobster\nAC039 (SUMMER CAP)=Coastal Club",
     prices: "1145 (EASY RUNNING SHORTS)=890\nP118 (BEACH BOARDSHORTS)=890\nBWL004 (EVERYDAY SHIRT)=890\nBWL005 (HOLIDAY STRIPE SHIRT)=990\nAPR BIKER (APR BIKER)=990\nAPRL Polo (APRL POLO)=1490\nASP013 (SEARCH PANTS)=1490\nASP016 (UV JACKET)=1190\nCSAP001 (CITY BRA)=1190\nCSAP004 (NOW HERE BRA)=1190\nCSAP008 (CAMP SHORTS)=1290\nCSAP009 (SANDTONE PANTS)=1490\nP128 (JOY VIBE SKIRT)=1290\nP125 (JOY VIBE TOP)=1190\nAC038 (BANDANA)=690\nCC019 (BOARDSHORTS)=890\nCC026 (SUMMER BEACH SHIRT)=1490\nCC028 (SUMMER BEACH SHIRT)=1490\nCC035 (BOARDSHORTS)=890\nAPT001 (SUMMER TEE)=690\nAPT002 (SUMMER TEE)=690\nAPT004 (SUMMER TEE)=690\nCC027 (SUMMER HOLIDAY DREAMS)=1490\nCCKID019 (KIDS BOARDSHORTS)=690\nCCKID026 (KIDS SUMMER BEACH SHIRT)=990\nAC028 (ADVENTURE CAP)=790\nAC029 (SUMMER CAP)=690\nAC039 (SUMMER CAP)=690",
     adminPin: "",
@@ -951,6 +957,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
         if(typeof data.config.promo==="string") lists.promo=data.config.promo;
         lists.promos = typeof data.config.promos==="string" ? data.config.promos : "";
         lists.groups = typeof data.config.groups==="string" ? data.config.groups : "";
+        lists.branchModels = typeof data.config.branchModels==="string" ? data.config.branchModels : "";
         if(typeof data.config.prices==="string" && data.config.prices) lists.prices=data.config.prices;
         if(typeof data.config.variants==="string" && data.config.variants) lists.variants=data.config.variants;
         /* The PIN values come back only for the owner; everyone else gets the
@@ -1032,7 +1039,9 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
       var oth=document.createElement("option");
       oth.value=OTHER_OPT; oth.textContent=OTHER_OPT; el.appendChild(oth);
     }
-    if(had && arr.indexOf(had)>=0) el.value=had;
+    /* Keep "อื่นๆ" too: it is never in `arr`, so without this any refill while
+       a free-text entry is open silently throws the choice away. */
+    if(had && (arr.indexOf(had)>=0 || (!noOther && had===OTHER_OPT))) el.value=had;
   }
   /* "SKU (NAME)=Colour, Colour" per line */
   function variantMap(){
@@ -1052,8 +1061,27 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
      lands in the right place without anyone re-ordering the tab.
      `numeric` so AC029 comes before AC038 rather than after AC1xx would, and
      `sensitivity:"base"` so "Time Pants" sits with the letters, not after them. */
+  /* Each branch stocks different things. `branchModels`, one line per branch:
+        <งาน/สาขา> = SKU, SKU, SKU
+     A branch with no line falls back to the whole `models` list, so nothing
+     breaks before the lines are written. */
+  function branchModelMap(){
+    var m={};
+    String(lists.branchModels||"").split("\n").forEach(function(line){
+      var i=line.indexOf("=");
+      if(i<1) return;
+      var ev=line.slice(0,i).trim();
+      var skus=line.slice(i+1).split(",").map(function(s){ return s.trim(); }).filter(Boolean);
+      if(ev && skus.length) m[ev]=skus;
+    });
+    return m;
+  }
+  function modelsForEvent(){
+    var only=branchModelMap()[eventValue()];
+    return (only && only.length) ? only : (lists.models||[]);
+  }
   function sortedSkus(){
-    return (lists.models||[]).slice().sort(function(a,b){
+    return modelsForEvent().slice().sort(function(a,b){
       return String(a).localeCompare(String(b), undefined, {numeric:true, sensitivity:"base"});
     });
   }
@@ -1104,6 +1132,13 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
   function applyLists(){
     /* Staff get no "อื่นๆ" on Event: branches are assigned, not invented. */
     fillSelect("f-event", lists.events, "— เลือกงาน · Event —", true, isStaff());
+    /* Settle the branch BEFORE the SKU list is built — the list is per branch,
+       and fillSelect drops a kept value that is not in the new options, which
+       left a seller whose branch differs from the date-guess seeing every SKU. */
+    if(isStaff() && me.events && me.events.length===1) $("f-event").value=me.events[0];
+    if(!$("f-event").value) $("f-event").value=eventForToday();
+    $("f-event-other").hidden = !isOtherOpt($("f-event").value);
+
     fillDatalist("l-pics",lists.pics);
     fillSelect("f-model", sortedSkus(), "— เลือกรุ่น / SKU —", true);
     refreshColors();
@@ -1111,8 +1146,6 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
     if(!nats.some(isOther)) nats.push("Other · อื่นๆ (ระบุ)");
     fillDatalist("l-nats",nats);
     renderChips($("c-size"),lists.sizes,"size",true);
-    if(!$("f-event").value) $("f-event").value=eventForToday();
-    $("f-event-other").hidden = !isOtherOpt($("f-event").value);
     if(!$("f-pic").value && lists.pics.length===1) $("f-pic").value=lists.pics[0];
     updateGate();
   }
@@ -1821,6 +1854,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
     $("e-promo").value=lists.promo||"";
     $("e-promos").value=lists.promos||"";
     $("e-groups").value=lists.groups||"";
+    $("e-branchmodels").value=lists.branchModels||"";
     $("e-prices").value=lists.prices||"";
     $("e-variants").value=lists.variants||"";
     $("allCount").textContent="ทุกงาน ทุกวัน — "+rows.length.toLocaleString()+" รายการ · backend only";
@@ -1860,7 +1894,8 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
   $("f-event").addEventListener("change",function(){
     $("f-event-other").hidden = !isOtherOpt(this.value);
     if(!isOtherOpt(this.value)) $("f-event-other").value="";
-    promoPick=""; refreshTotals();   /* a different branch runs different promos */
+    /* A different branch stocks different things and runs different promos. */
+    promoPick=""; applyLists(); refreshTotals();
   });
   $("f-promo").addEventListener("change",function(){ promoPick=this.value; discAuto=true; refreshTotals(); });
   ["f-model","f-color","f-price","f-event","f-event-other","f-model-other","f-color-other"].forEach(function(id){
@@ -1972,6 +2007,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;bac
     lists.promo=$("e-promo").value.trim();
     lists.promos=$("e-promos").value.trim();
     lists.groups=$("e-groups").value.trim();
+    lists.branchModels=$("e-branchmodels").value.trim();
     lists.prices=$("e-prices").value.trim();
     lists.variants=$("e-variants").value.trim();
     var wantedPins=lists.staffPins;

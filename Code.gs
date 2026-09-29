@@ -22,7 +22,7 @@ var COLS = [
   'isThai','nationality','gender','age','note','createdAt'
 ];
 
-var CONFIG_KEYS = ['events','pics','models','colors','sizes','nats','promo','promos','groups','variants','prices','adminPin','staffPins'];
+var CONFIG_KEYS = ['events','pics','models','branchModels','colors','sizes','nats','promo','promos','groups','variants','prices','adminPin','staffPins'];
 var LIST_KEYS   = ['events','pics','models','colors','sizes','nats'];
 
 /* ---------- helpers ---------- */
