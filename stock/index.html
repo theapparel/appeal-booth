@@ -4537,7 +4537,9 @@ table.vtable tfoot td.num { text-align: right; }
   function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
 
   function keyOf(r) {
-    const n = function (x) { return String(x == null ? "" : x).toLowerCase().replace(/[^a-z0-9]/g, ""); };
+    /* letters and digits in any script — see norm() in Code.gs */
+    const n = function (x) { return String(x == null ? "" : x).toLowerCase()
+      .replace(/[\u0000-\u002f\u003a-\u0040\u005b-\u0060\u007b-\u00bf\u2000-\u206f]/g, ""); };
     return n(r.sheetCode) + "|" + n(r.color) + "|" + n(r.size);
   }
 
@@ -5114,7 +5116,8 @@ table.vtable tfoot td.num { text-align: right; }
     return d.toISOString().slice(0, 10);
   }
 
-  function inNorm(x) { return String(x == null ? "" : x).toLowerCase().replace(/[^a-z0-9]/g, ""); }
+  function inNorm(x) { return String(x == null ? "" : x).toLowerCase()
+    .replace(/[\u0000-\u002f\u003a-\u0040\u005b-\u0060\u007b-\u00bf\u2000-\u206f]/g, ""); }
 
   /* Two shapes, both of them what the delivery sheets actually look like:
        code, colour, size, qty
