@@ -389,6 +389,22 @@ body.is-past-event #syncBtn { display: none !important; }
   border-radius: var(--radius-md);
   padding: 6px 10px;
 }
+/* The delivery / return sheet, and the ledger's filter row. */
+.in-top { display: flex; flex-wrap: wrap; gap: var(--space-3); }
+.in-top .field { flex: 1 1 180px; }
+.in-top select, .in-top input { min-width: 0; width: 100%; }
+#inPaste { width: 100%; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; }
+.in-wrap { max-height: 240px; overflow-y: auto; margin-top: var(--space-2); }
+#inTable { min-width: 0; }
+#inTable td, #inTable th { padding: 6px 10px; font-size: 12px; text-align: left; }
+.in-open { display: flex; align-items: center; gap: 8px; margin-top: var(--space-3); font-size: 12px; }
+.in-bad { color: var(--color-danger); }
+.in-new { color: var(--color-accent-dark); }
+.moves-filter { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--space-3); margin-bottom: var(--space-3); }
+.field--inline { flex: 0 0 auto; }
+.field--inline input { font-size: 12px; }
+.moves-total { font-size: 12px; color: var(--color-muted); margin: 0 0 var(--space-2); }
+
 /* Bilingual labels: Thai in ink, English after the dot in the softer colour,
    the same pairing the booth order log uses. */
 .lbl-th { font-weight: 600; }
@@ -1542,6 +1558,7 @@ table.vtable tfoot td.num { text-align: right; }
     <span class="readonly-badge" id="readonlyBadge" hidden></span>
     <div class="spacer"></div>
     <button class="lock-btn" type="button" id="syncBtn" title="Pull sales from the order log" data-title-key="pullOrders"><span id="syncBtnText">Pull sales</span></button>
+    <button class="lock-btn" type="button" id="inBtn"><span id="inBtnText">Delivery / Return</span></button>
     <button class="lock-btn" type="button" id="movesBtn"><span id="movesBtnText">Movements</span></button>
     <button class="lock-btn" type="button" id="adminBtn" hidden><span id="adminBtnText">Settings</span></button>
     <button class="lock-btn" type="button" id="refreshBtn" aria-label="Refresh"><span aria-hidden="true">↻</span> <span id="refreshBtnText">Refresh</span></button>
@@ -1728,11 +1745,80 @@ table.vtable tfoot td.num { text-align: right; }
       </button>
     </div>
     <div class="modal-body">
+      <div class="moves-filter">
+        <div class="seg" role="group" id="movesKinds" aria-label="Kind">
+          <button type="button" data-kind="" id="mfAll" aria-pressed="true">All</button>
+          <button type="button" data-kind="add" id="mfIn" aria-pressed="false">Stock in</button>
+          <button type="button" data-kind="return" id="mfRet" aria-pressed="false">Returns</button>
+          <button type="button" data-kind="sold" id="mfOut" aria-pressed="false">Sales</button>
+          <button type="button" data-kind="count" id="mfCount" aria-pressed="false">Recount</button>
+        </div>
+        <label class="field field--inline"><span id="mfFromLabel">From</span>
+          <input id="mfFrom" type="date"></label>
+        <label class="field field--inline"><span id="mfToLabel">To</span>
+          <input id="mfTo" type="date"></label>
+        <button class="btn btn--sm" type="button" id="mfClear">Clear</button>
+      </div>
+      <p class="moves-total" id="movesTotal"></p>
       <ul class="moves-list" id="movesList"></ul>
       <p class="modal-note" id="movesEmpty" hidden></p>
     </div>
     <div class="modal-foot">
       <button class="btn" type="button" id="movesCloseBtn">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- 4b-2. A DELIVERY IN, OR A RETURN TO THE WAREHOUSE -->
+<div class="overlay" id="inOverlay" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="inTitle" id="inModal">
+    <div class="modal-head">
+      <div>
+        <h2 id="inTitle">Delivery in, or return to the warehouse</h2>
+        <p id="inHint"></p>
+      </div>
+      <button class="icon-btn" type="button" id="inCloseX" aria-label="Close">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+          <path d="M2.5 2.5l7 7M9.5 2.5l-7 7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="in-top">
+        <label class="field"><span id="inKindLabel">What is this</span>
+          <select id="inKind">
+            <option value="add">Stock in</option>
+            <option value="return">Return to warehouse</option>
+          </select>
+        </label>
+        <label class="field"><span id="inDateLabel">Date</span>
+          <input id="inDate" type="date">
+        </label>
+        <label class="field"><span id="inNoteLabel">Note</span>
+          <input id="inNote" type="text" autocomplete="off">
+        </label>
+      </div>
+      <label class="field"><span id="inPasteLabel">Paste the sheet</span>
+        <textarea id="inPaste" rows="6" spellcheck="false"></textarea>
+      </label>
+      <p class="modal-note" id="inParseNote"></p>
+      <div class="table-wrap in-wrap">
+        <table id="inTable">
+          <thead><tr>
+            <th id="inColLine">Line</th><th id="inColQty">Qty</th><th id="inColState">Status</th>
+          </tr></thead>
+          <tbody id="inBody"></tbody>
+        </table>
+      </div>
+      <label class="in-open" id="inOpenWrap" hidden>
+        <input type="checkbox" id="inOpenMissing" checked>
+        <span id="inOpenMissingText">Open the lines that are missing</span>
+      </label>
+      <p class="modal-note" id="inResult" hidden></p>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" type="button" id="inCancel">Close</button>
+      <button class="btn btn--primary" type="button" id="inSave">Save</button>
     </div>
   </div>
 </div>
@@ -2001,6 +2087,38 @@ table.vtable tfoot td.num { text-align: right; }
       adjust: "Adjust\u2026",
       adjustTitle: "Adjust this line",
       adjustHow: "What happened?",
+      inBtn: "Delivery / Return",
+      inTitle: "Delivery in, or return to the warehouse",
+      inHint: "One row per line: code, colour, size, qty",
+      inKindLabel: "What is this",
+      inDateLabel: "Date",
+      inNoteLabel: "Note",
+      inPasteLabel: "Paste the sheet",
+      inPastePlaceholder: "BWL004, Sand, L, 1\nP125, JOY VIBE TOP, Black, XL, 1",
+      inColLine: "Line",
+      inColQty: "Qty",
+      inColState: "Status",
+      inKnown: "on the count",
+      inMissing: "not counted yet",
+      inUnreadable: "cannot be read",
+      inOpenMissingText: "Open the lines that are missing",
+      inSaveBtn: "Save",
+      inNothing: "Nothing to save yet",
+      inBadRows: "{n} rows cannot be read and will be left out",
+      inDone: "{n} saved",
+      inSkipped: "{n} refused by the sheet",
+      inOpened: "{n} lines opened",
+      inNeedOwner: "A line that was never counted has to be opened by the owner.",
+      movesAll: "All",
+      movesIn: "Stock in",
+      movesRet: "Returns",
+      movesOut: "Sales",
+      movesRecount: "Recount",
+      movesFrom: "From",
+      movesTo: "To",
+      movesClear: "Clear",
+      movesTotal: "{n} entries · +{plus} in, −{minus} out",
+      movesNoneHere: "Nothing matches that filter",
       reasonSold: "Taken out (no order)",
       reasonAdd: "Stock in",
       reasonReturn: "Return to warehouse",
@@ -2222,6 +2340,37 @@ table.vtable tfoot td.num { text-align: right; }
       adjust: "แก้จำนวน…",
       adjustTitle: "แก้จำนวนรายการนี้",
       adjustHow: "เกิดอะไรขึ้น",
+      inBtn: "รับเข้า/คืนคลัง",
+      inTitle: "รับของเข้า หรือ คืนคลัง",
+      inHint: "บรรทัดละ 1 รายการ: รหัส, สี, ไซส์, จำนวน",
+      inKindLabel: "รายการนี้คือ",
+      inDateLabel: "วันที่",
+      inNoteLabel: "หมายเหตุ",
+      inPasteLabel: "วางรายการจากใบส่งของ",
+      inColLine: "รายการ",
+      inColQty: "จำนวน",
+      inColState: "สถานะ",
+      inKnown: "มีในใบนับ",
+      inMissing: "ยังไม่มีในใบนับ",
+      inUnreadable: "อ่านไม่ได้",
+      inOpenMissingText: "เปิดบรรทัดที่ยังไม่มีให้ด้วย",
+      inSaveBtn: "บันทึก",
+      inNothing: "ยังไม่มีรายการให้บันทึก",
+      inBadRows: "อ่านไม่ได้ {n} บรรทัด จะไม่ถูกบันทึก",
+      inDone: "บันทึกแล้ว {n} รายการ",
+      inSkipped: "ชีตปฏิเสธ {n} รายการ",
+      inOpened: "เปิดบรรทัดใหม่ {n} รายการ",
+      inNeedOwner: "บรรทัดที่ยังไม่เคยนับ ต้องให้เจ้าของเปิดก่อน",
+      movesAll: "ทั้งหมด",
+      movesIn: "รับเข้า",
+      movesRet: "คืนคลัง",
+      movesOut: "ขาย/ตัดออก",
+      movesRecount: "นับใหม่",
+      movesFrom: "ตั้งแต่",
+      movesTo: "ถึง",
+      movesClear: "ล้าง",
+      movesTotal: "{n} รายการ · เข้า +{plus} · ออก −{minus}",
+      movesNoneHere: "ไม่มีรายการตามตัวกรองนี้",
       reasonSold: "ตัดออก (ไม่ได้ขายผ่านหน้าขาย)",
       reasonAdd: "รับของเพิ่ม",
       reasonReturn: "คืนคลัง",
@@ -2387,6 +2536,8 @@ table.vtable tfoot td.num { text-align: right; }
     countMain: 1, item: 1, items: 1, row: 1, rows: 1,
     sizeColorRow: 1, sizeColorRows: 1, itemSuffix: 1, itemsSuffix: 1,
     unitsLine: 1, rowsLowLine: 1, rowsZeroLine: 1,
+    inPastePlaceholder: 1, inBadRows: 1, inDone: 1, inSkipped: 1, inOpened: 1,
+    movesTotal: 1,
     searchPlaceholder: 1
   };
 
@@ -4146,6 +4297,14 @@ table.vtable tfoot td.num { text-align: right; }
     ["statInHint", "statInHint"], ["statLowHint", "statLowHint2"], ["statOutHint", "statOutHint"],
     ["syncLabel", "countedOn"],
     ["lockBtnText", "lockBtn"], ["movesBtnText", "movesBtn"], ["syncBtnText", "pullBtn"],
+    ["inBtnText", "inBtn"], ["inTitle", "inTitle"], ["inHint", "inHint"],
+    ["inKindLabel", "inKindLabel"], ["inDateLabel", "inDateLabel"],
+    ["inNoteLabel", "inNoteLabel"], ["inPasteLabel", "inPasteLabel"],
+    ["inColLine", "inColLine"], ["inColQty", "inColQty"], ["inColState", "inColState"],
+    ["inOpenMissingText", "inOpenMissingText"], ["inSave", "inSaveBtn"], ["inCancel", "close"],
+    ["mfAll", "movesAll"], ["mfIn", "movesIn"], ["mfRet", "movesRet"],
+    ["mfOut", "movesOut"], ["mfCount", "movesRecount"], ["mfClear", "movesClear"],
+    ["mfFromLabel", "movesFrom"], ["mfToLabel", "movesTo"],
     ["adminBtnText", "adminBtn"], ["adminTitle", "adminTitle"],
     ["adminSubtitle", "adminSubtitle"], ["adminEventsH", "adminEventsH"],
     ["adminAddEventText", "adminAddEvent"], ["adminActiveLabel", "adminActiveLabel"],
@@ -4935,6 +5094,152 @@ table.vtable tfoot td.num { text-align: right; }
     if (delta) recordMove(r, delta, reason, { by: by, note: note });
   }
 
+  /* ---- a delivery in, or a return to the warehouse ----------- */
+
+  /* The booth's paperwork arrives as a sheet, not as one tap per piece: a
+     delivery note from the warehouse, or a list of what went back. Typing that
+     into the per-line +/- is where the mistakes come from — a row missed, a
+     size read off the wrong column — so the sheet is pasted whole, read back
+     as rows the person can check, and then saved as one batch under one date.
+
+     Nothing is guessed: a row that cannot be read is shown as unreadable and
+     left out, and a line the count has never had is marked, because the sheet
+     refuses a movement against it. The owner can have those opened at zero in
+     the same pass; a staff member is told to ask. */
+
+  let inRows = [];
+
+  function todayISO() {
+    const d = new Date(Date.now() + 7 * 3600000);   /* Bangkok */
+    return d.toISOString().slice(0, 10);
+  }
+
+  function inNorm(x) { return String(x == null ? "" : x).toLowerCase().replace(/[^a-z0-9]/g, ""); }
+
+  /* Two shapes, both of them what the delivery sheets actually look like:
+       code, colour, size, qty
+       code, description, colour, size, qty
+     Anything else is left for the person to fix rather than guessed at. */
+  function inParse(text) {
+    const out = [];
+    String(text || "").split(/[\r\n]+/).forEach(function (raw) {
+      const line = raw.trim();
+      if (!line) return;
+      const f = line.split(/\t|,|;|\|/).map(function (x) { return x.trim(); })
+                    .filter(function (x) { return x !== ""; });
+      const row = { raw: line, ok: false, code: "", color: "", size: "", qty: 0, rec: null };
+      if (f.length === 3) {
+        row.code = f[0]; row.color = f[1]; row.size = f[2]; row.qty = 1;
+      } else if (f.length === 4) {
+        row.code = f[0]; row.color = f[1]; row.size = f[2]; row.qty = Number(f[3]);
+      } else if (f.length >= 5) {
+        row.code = f[0]; row.color = f[2]; row.size = f[3]; row.qty = Number(f[4]);
+      }
+      row.ok = !!(row.code && row.color && row.size &&
+                  row.qty > 0 && Math.floor(row.qty) === row.qty);
+      if (row.ok) {
+        const want = inNorm(row.code) + "|" + inNorm(row.color) + "|" + inNorm(row.size);
+        row.rec = state.records.filter(function (r) { return keyOf(r) === want; })[0] || null;
+      }
+      out.push(row);
+    });
+    return out;
+  }
+
+  function inRender() {
+    const body = document.getElementById("inBody");
+    body.innerHTML = "";
+    let bad = 0, missing = 0;
+    inRows.forEach(function (row) {
+      const tr = document.createElement("tr");
+      const what = document.createElement("td");
+      const qty = document.createElement("td");
+      const state2 = document.createElement("td");
+      if (!row.ok) {
+        bad++;
+        what.textContent = row.raw;
+        qty.textContent = "";
+        state2.textContent = t("inUnreadable");
+        state2.className = "in-bad";
+      } else {
+        const rec = row.rec;
+        what.textContent = (rec ? dProduct(rec.productName, rec.productTh) + " · " : row.code + " · ") +
+          (rec ? dColor(rec.color, rec.colorTh) : row.color) + " · " + dSize(row.size);
+        qty.textContent = String(row.qty);
+        if (rec) { state2.textContent = t("inKnown"); }
+        else { missing++; state2.textContent = t("inMissing"); state2.className = "in-new"; }
+      }
+      tr.appendChild(what); tr.appendChild(qty); tr.appendChild(state2);
+      body.appendChild(tr);
+    });
+    const note = document.getElementById("inParseNote");
+    note.textContent = bad ? tf("inBadRows", { n: bad }) : "";
+    const wrap = document.getElementById("inOpenWrap");
+    wrap.hidden = !missing;
+    if (missing && !isOwner()) {
+      note.textContent = (note.textContent ? note.textContent + " · " : "") + t("inNeedOwner");
+      wrap.hidden = true;
+    }
+  }
+
+  function openIn() {
+    document.getElementById("inDate").value = todayISO();
+    document.getElementById("inNote").value = "";
+    document.getElementById("inPaste").value = "";
+    document.getElementById("inPaste").placeholder = t("inPastePlaceholder");
+    document.getElementById("inResult").hidden = true;
+    document.getElementById("inKind").options[0].textContent = t("reasonAdd");
+    document.getElementById("inKind").options[1].textContent = t("reasonReturn");
+    inRows = [];
+    inRender();
+    document.getElementById("inOverlay").hidden = false;
+    document.getElementById("inPaste").focus();
+  }
+
+  function closeIn() { document.getElementById("inOverlay").hidden = true; }
+
+  function inSave() {
+    const kind = document.getElementById("inKind").value === "return" ? "return" : "add";
+    const date = document.getElementById("inDate").value || todayISO();
+    const note = document.getElementById("inNote").value.trim();
+    const rows = inRows.filter(function (r) { return r.ok; });
+    if (!rows.length) { showToast(t("inNothing")); return; }
+    if (!Stock.url) { showToast(t("readOnly")); return; }
+
+    const ts = date + "T12:00:00";
+    const stamp = Date.now();
+    const moves = rows.map(function (r, i) {
+      return { code: r.code, color_en: r.color, size: r.size,
+               delta: kind === "add" ? r.qty : -r.qty,
+               reason: kind, ts: ts, note: note,
+               clientId: "sheet-" + stamp + "-" + i };
+    });
+    const missing = rows.filter(function (r) { return !r.rec; })
+                        .map(function (r) { return { code: r.code, color_en: r.color, size: r.size }; });
+    const open = isOwner() && missing.length &&
+                 document.getElementById("inOpenMissing").checked;
+
+    const btn = document.getElementById("inSave");
+    btn.disabled = true;
+    const first = open ? callApi("addLines", { lines: missing }) : Promise.resolve(null);
+    first.then(function (made) {
+      return callApi("moveBatch", { moves: moves }).then(function (res) {
+        const bits = [tf("inDone", { n: res.applied || 0 })];
+        if (made && made.opened) bits.push(tf("inOpened", { n: made.opened }));
+        if (res.skipped && res.skipped.length) bits.push(tf("inSkipped", { n: res.skipped.length }));
+        const out = document.getElementById("inResult");
+        out.hidden = false;
+        out.textContent = bits.join(" · ");
+        showToast(bits[0]);
+        return refreshFromSheet();
+      });
+    }).catch(function (err) {
+      const out = document.getElementById("inResult");
+      out.hidden = false;
+      out.textContent = apiErrText(err);
+    }).then(function () { btn.disabled = false; });
+  }
+
   /* ---- the ledger ------------------------------------------- */
   function openMovements() {
     const list = document.getElementById("movesList");
@@ -4942,29 +5247,79 @@ table.vtable tfoot td.num { text-align: right; }
     list.innerHTML = "";
     empty.hidden = true;
     document.getElementById("movesOverlay").hidden = false;
+    document.getElementById("movesTotal").textContent = "";
 
     if (!Stock.url) {
       empty.hidden = false;
       empty.textContent = t("readOnly");
       return;
     }
-    callApi("movements", { limit: 200 }).then(function (res) {
-      const rows = res.movements || [];
+    callApi("movements", { limit: 400 }).then(function (res) {
+      movesRows = res.movements || [];
       /* The sheet decides what this PIN may see and says so in res.scope. Say it
          on screen too, so a short list reads as "today" and not as "the taps
          did not save". */
-      const mine = res.scope === "mine-today";
-      document.getElementById("movesHint").textContent = mine ? t("movesMine") : t("movesHint");
-      if (!rows.length) {
-        empty.hidden = false;
-        empty.textContent = mine ? t("movesEmptyToday") : t("movesEmpty");
-        return;
-      }
-      rows.forEach(function (m) { list.appendChild(movementItem(m)); });
+      movesMine = res.scope === "mine-today";
+      document.getElementById("movesHint").textContent = movesMine ? t("movesMine") : t("movesHint");
+      renderMoves();
     }).catch(function () {
       empty.hidden = false;
       empty.textContent = t("offline");
     });
+  }
+
+  /* The ledger is also the proof that a delivery went in, so it filters: by what
+     kind of movement it was, and by the days it happened. Both are done here on
+     rows already fetched — the sheet has said what this PIN may see, and a
+     filter must never be able to widen that. */
+  let movesRows = [], movesMine = false;
+  const movesFilter = { kind: "", from: "", to: "" };
+
+  function movesMatch(m) {
+    const r = String(m.reason || "").toLowerCase();
+    const k = movesFilter.kind;
+    if (k === "add" && r !== "add") return false;
+    if (k === "return" && r !== "return") return false;
+    if (k === "sold" && r !== "sold" && r !== "out") return false;
+    if (k === "count" && r !== "count" && r !== "undo") return false;
+    const day = String(m.ts || "").slice(0, 10);
+    if (movesFilter.from && day && day < movesFilter.from) return false;
+    if (movesFilter.to && day && day > movesFilter.to) return false;
+    return true;
+  }
+
+  function renderMoves() {
+    const list = document.getElementById("movesList");
+    const empty = document.getElementById("movesEmpty");
+    const total = document.getElementById("movesTotal");
+    list.innerHTML = "";
+    empty.hidden = true;
+
+    const rows = movesRows.filter(movesMatch);
+    let plus = 0, minus = 0;
+    rows.forEach(function (m) {
+      const d = Number(m.delta) || 0;
+      if (d > 0) plus += d; else minus += Math.abs(d);
+    });
+    total.textContent = rows.length
+      ? tf("movesTotal", { n: rows.length, plus: plus, minus: minus }) : "";
+
+    if (!rows.length) {
+      empty.hidden = false;
+      const filtered = movesFilter.kind || movesFilter.from || movesFilter.to;
+      empty.textContent = filtered ? t("movesNoneHere")
+                                   : (movesMine ? t("movesEmptyToday") : t("movesEmpty"));
+      return;
+    }
+    rows.forEach(function (m) { list.appendChild(movementItem(m)); });
+  }
+
+  function setMovesKind(kind) {
+    movesFilter.kind = kind || "";
+    document.querySelectorAll("#movesKinds button").forEach(function (b) {
+      b.setAttribute("aria-pressed", String((b.getAttribute("data-kind") || "") === movesFilter.kind));
+    });
+    renderMoves();
   }
 
   /* The sheet stores the reason as a plain code — sold, out, add, count, undo.
@@ -5200,6 +5555,29 @@ table.vtable tfoot td.num { text-align: right; }
     });
     document.getElementById("adminSave").addEventListener("click", saveAdmin);
     document.getElementById("movesBtn").addEventListener("click", openMovements);
+    document.getElementById("inBtn").addEventListener("click", openIn);
+    document.getElementById("inCloseX").addEventListener("click", closeIn);
+    document.getElementById("inCancel").addEventListener("click", closeIn);
+    document.getElementById("inSave").addEventListener("click", inSave);
+    document.getElementById("inPaste").addEventListener("input", function () {
+      inRows = inParse(this.value);
+      inRender();
+    });
+    document.querySelectorAll("#movesKinds button").forEach(function (b) {
+      b.addEventListener("click", function () { setMovesKind(b.getAttribute("data-kind")); });
+    });
+    document.getElementById("mfFrom").addEventListener("change", function () {
+      movesFilter.from = this.value; renderMoves();
+    });
+    document.getElementById("mfTo").addEventListener("change", function () {
+      movesFilter.to = this.value; renderMoves();
+    });
+    document.getElementById("mfClear").addEventListener("click", function () {
+      movesFilter.from = ""; movesFilter.to = "";
+      document.getElementById("mfFrom").value = "";
+      document.getElementById("mfTo").value = "";
+      setMovesKind("");
+    });
     document.getElementById("movesCloseX").addEventListener("click", function () {
       document.getElementById("movesOverlay").hidden = true;
     });
