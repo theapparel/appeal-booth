@@ -5432,7 +5432,8 @@ table.vtable tfoot td.num { text-align: right; }
     if (res.unmatched && res.unmatched.length) {
       lines.push(t("reportUnmatched") + " (" + res.unmatched.length + ")");
       res.unmatched.forEach(function (u) {
-        lines.push("\u2022 " + u.order + "  " + u.model + "  " + u.color + "  " + u.size +
+        lines.push("\u2022 " + u.order + (u.event ? "  [" + u.event + "]" : "") +
+                   "  " + u.model + "  " + u.color + "  " + u.size +
                    "  x" + u.qty + "  \u2014 " + u.why);
       });
     }
@@ -5510,7 +5511,9 @@ table.vtable tfoot td.num { text-align: right; }
       what.textContent = row.model + " · " + row.size + " · " + row.color;
       const meta = document.createElement("span");
       meta.className = "meta";
-      meta.textContent = row.order + " · " + tail;
+      /* Which booth: with two events trading at once, "not in the count" means
+         nothing until you know whose count. */
+      meta.textContent = row.order + (row.event ? " · " + row.event : "") + " · " + tail;
       what.appendChild(meta);
       const d = document.createElement("span");
       d.className = "moves-delta";
