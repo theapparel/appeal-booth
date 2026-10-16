@@ -2104,13 +2104,14 @@ table.vtable tfoot td.num { text-align: right; }
       adjustHow: "What happened?",
       inBtn: "Delivery / Return",
       inTitle: "Delivery in, or return to the warehouse",
-      inHint: "One row per line: code, colour, size, qty, type",
+      inHint: "One row per line: code, colour, size, qty, type (รับเข้า or ตัดออก)",
       inKindLabel: "What is this",
       inDateLabel: "Date",
       inNoteLabel: "Note",
       inPickText: "Choose a file",
       inTplText: "Download the template",
-      inFileHow: "Excel or CSV. The type column decides each row on its own \u2014 stock in, return, or taken out. Leave it blank and the row follows the choice above.",
+      inFileHow: "Excel or CSV. The type column takes two words only \u2014 รับเข้า to add, ตัดออก to deduct. Leave it blank and the row follows the choice above.",
+      inBadType: "the type must be รับเข้า or ตัดออก",
       inReading: "Reading the file\u2026",
       inFileBad: "That file could not be read. Save it as CSV and try again.",
       inFileEmpty: "No rows found in that file.",
@@ -2364,13 +2365,14 @@ table.vtable tfoot td.num { text-align: right; }
       adjustHow: "เกิดอะไรขึ้น",
       inBtn: "รับเข้า/คืนคลัง",
       inTitle: "รับของเข้า หรือ คืนคลัง",
-      inHint: "บรรทัดละ 1 รายการ: รหัส, สี, ไซส์, จำนวน, type",
+      inHint: "บรรทัดละ 1 รายการ: รหัส, สี, ไซส์, จำนวน, type (รับเข้า/ตัดออก)",
       inKindLabel: "รายการนี้คือ",
       inDateLabel: "วันที่",
       inNoteLabel: "หมายเหตุ",
       inPickText: "เลือกไฟล์",
       inTplText: "ดาวน์โหลดแบบฟอร์ม",
-      inFileHow: "ไฟล์ Excel หรือ CSV · ช่อง type บอกว่าแต่ละบรรทัดคือ รับเข้า คืนคลัง หรือ ตัดออก · เว้นว่างไว้ จะใช้ตามที่เลือกด้านบน",
+      inFileHow: "ไฟล์ Excel หรือ CSV · ช่อง type มีแค่ 2 คำ คือ รับเข้า กับ ตัดออก · เว้นว่างไว้ จะใช้ตามที่เลือกด้านบน",
+      inBadType: "ช่อง type ต้องเป็น รับเข้า หรือ ตัดออก เท่านั้น",
       inReading: "กำลังอ่านไฟล์…",
       inFileBad: "อ่านไฟล์นี้ไม่ได้ ลองบันทึกเป็น CSV แล้วลองใหม่",
       inFileEmpty: "ไม่พบรายการในไฟล์นี้",
@@ -5162,13 +5164,20 @@ table.vtable tfoot td.num { text-align: right; }
      where a line goes missing. A row with no type follows the choice at the top
      of the panel, so the old way of working still works unchanged. */
 
+  /* Two words, and only two. Every row either comes in or goes out, and a column
+     with four possible values is a column people get wrong on a phone at a booth.
+     Anything else written there is an error rather than a guess — the same rule the
+     rest of this panel has always followed. The finer word for a deduction
+     (คืนคลัง rather than ตัดออก) is still available, from the choice at the top
+     of the panel, for a whole sheet that is a warehouse return. */
   const IN_TYPES = {
     add: "add", "in": "add", stockin: "add", delivery: "add", received: "add",
-    receive: "add", "รับเข้า": "add", "รับของ": "add", "รับของเพิ่ม": "add", "เข้า": "add",
-    "return": "return", returned: "return", back: "return",
-    "คืนคลัง": "return", "คืน": "return", "ส่งคืน": "return",
-    out: "out", takenout: "out", writeoff: "out", damaged: "out", lost: "out",
-    "ตัดออก": "out", "ออก": "out", "เสียหาย": "out", "ชำรุด": "out", "หาย": "out"
+    receive: "add", plus: "add",
+    "รับเข้า": "add", "รับของ": "add", "รับของเพิ่ม": "add", "เข้า": "add", "เพิ่ม": "add",
+    deduct: "out", out: "out", minus: "out", remove: "out", takenout: "out",
+    writeoff: "out", damaged: "out", lost: "out",
+    "ตัดออก": "out", "ออก": "out", "ลด": "out", "ลดออก": "out", "หักออก": "out",
+    "เสียหาย": "out", "ชำรุด": "out", "หาย": "out"
   };
 
   function inFlat(v) {
@@ -5214,8 +5223,12 @@ table.vtable tfoot td.num { text-align: right; }
                   type: inType(type),
                   note: String(note == null ? "" : note).trim(),
                   rec: null };
+    /* A type that is neither of the two words stops the row rather than quietly
+       falling back to the panel: a sheet that says the wrong thing must not move
+       stock in the direction nobody asked for. Blank is still "follow the panel". */
+    row.badType = !!inFlat(type) && !row.type;
     row.ok = !!(row.code && row.color && row.size &&
-                row.qty > 0 && Math.floor(row.qty) === row.qty);
+                row.qty > 0 && Math.floor(row.qty) === row.qty) && !row.badType;
     if (row.ok) {
       const want = inNorm(row.code) + "|" + inNorm(row.color) + "|" + inNorm(row.size);
       row.rec = state.records.filter(function (r) { return keyOf(r) === want; })[0] || null;
@@ -5344,7 +5357,7 @@ table.vtable tfoot td.num { text-align: right; }
     const rows = [
       ["code", "colour", "size", "qty", "type", "note"],
       ["BWL004", "Sand", "L", "2", "รับเข้า", "ใบส่งของ"],
-      ["P125", "Black", "XL", "1", "คืนคลัง", ""],
+      ["P125", "Black", "XL", "3", "รับเข้า", ""],
       ["AC029", "Manta", "Free", "1", "ตัดออก", "ชำรุด"]
     ];
     const csv = rows.map(function (r) {
@@ -5384,7 +5397,7 @@ table.vtable tfoot td.num { text-align: right; }
         what.textContent = row.raw;
         qty.textContent = "";
         ty.textContent = "";
-        state2.textContent = t("inUnreadable");
+        state2.textContent = row.badType ? t("inBadType") : t("inUnreadable");
         state2.className = "in-bad";
       } else {
         /* What this row will actually do, so it can be checked before saving
