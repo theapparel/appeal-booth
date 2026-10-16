@@ -393,6 +393,10 @@ body.is-past-event #syncBtn { display: none !important; }
 .in-top { display: flex; flex-wrap: wrap; gap: var(--space-3); }
 .in-top .field { flex: 1 1 180px; }
 .in-top select, .in-top input { min-width: 0; width: 100%; }
+.in-file { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin-bottom: var(--space-2); }
+.in-file .btn { cursor: pointer; }
+.in-filename { font-size: 12px; color: var(--color-muted); overflow-wrap: anywhere; }
+td.in-dim { color: var(--color-muted); }
 #inPaste { width: 100%; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; }
 .in-wrap { max-height: 240px; overflow-y: auto; margin-top: var(--space-2); }
 #inTable { min-width: 0; }
@@ -1789,6 +1793,7 @@ table.vtable tfoot td.num { text-align: right; }
           <select id="inKind">
             <option value="add">Stock in</option>
             <option value="return">Return to warehouse</option>
+            <option value="out">Taken out</option>
           </select>
         </label>
         <label class="field"><span id="inDateLabel">Date</span>
@@ -1798,6 +1803,15 @@ table.vtable tfoot td.num { text-align: right; }
           <input id="inNote" type="text" autocomplete="off">
         </label>
       </div>
+      <div class="in-file">
+        <label class="btn" id="inPickWrap">
+          <input id="inFile" type="file" accept=".csv,.xlsx,.xlsm,.xls,text/csv" hidden>
+          <span id="inPickText">Choose a file</span>
+        </label>
+        <button class="btn" type="button" id="inTpl"><span id="inTplText">Download the template</span></button>
+        <span class="in-filename" id="inFileName"></span>
+      </div>
+      <p class="modal-note" id="inFileHow"></p>
       <label class="field"><span id="inPasteLabel">Paste the sheet</span>
         <textarea id="inPaste" rows="6" spellcheck="false"></textarea>
       </label>
@@ -1805,7 +1819,8 @@ table.vtable tfoot td.num { text-align: right; }
       <div class="table-wrap in-wrap">
         <table id="inTable">
           <thead><tr>
-            <th id="inColLine">Line</th><th id="inColQty">Qty</th><th id="inColState">Status</th>
+            <th id="inColLine">Line</th><th id="inColQty">Qty</th>
+            <th id="inColType">In or out</th><th id="inColState">Status</th>
           </tr></thead>
           <tbody id="inBody"></tbody>
         </table>
@@ -2089,10 +2104,17 @@ table.vtable tfoot td.num { text-align: right; }
       adjustHow: "What happened?",
       inBtn: "Delivery / Return",
       inTitle: "Delivery in, or return to the warehouse",
-      inHint: "One row per line: code, colour, size, qty",
+      inHint: "One row per line: code, colour, size, qty, type",
       inKindLabel: "What is this",
       inDateLabel: "Date",
       inNoteLabel: "Note",
+      inPickText: "Choose a file",
+      inTplText: "Download the template",
+      inFileHow: "Excel or CSV. The type column decides each row on its own \u2014 stock in, return, or taken out. Leave it blank and the row follows the choice above.",
+      inReading: "Reading the file\u2026",
+      inFileBad: "That file could not be read. Save it as CSV and try again.",
+      inFileEmpty: "No rows found in that file.",
+      inColType: "In or out",
       inPasteLabel: "Paste the sheet",
       inPastePlaceholder: "BWL004, Sand, L, 1\nP125, JOY VIBE TOP, Black, XL, 1",
       inColLine: "Line",
@@ -2342,10 +2364,17 @@ table.vtable tfoot td.num { text-align: right; }
       adjustHow: "เกิดอะไรขึ้น",
       inBtn: "รับเข้า/คืนคลัง",
       inTitle: "รับของเข้า หรือ คืนคลัง",
-      inHint: "บรรทัดละ 1 รายการ: รหัส, สี, ไซส์, จำนวน",
+      inHint: "บรรทัดละ 1 รายการ: รหัส, สี, ไซส์, จำนวน, type",
       inKindLabel: "รายการนี้คือ",
       inDateLabel: "วันที่",
       inNoteLabel: "หมายเหตุ",
+      inPickText: "เลือกไฟล์",
+      inTplText: "ดาวน์โหลดแบบฟอร์ม",
+      inFileHow: "ไฟล์ Excel หรือ CSV · ช่อง type บอกว่าแต่ละบรรทัดคือ รับเข้า คืนคลัง หรือ ตัดออก · เว้นว่างไว้ จะใช้ตามที่เลือกด้านบน",
+      inReading: "กำลังอ่านไฟล์…",
+      inFileBad: "อ่านไฟล์นี้ไม่ได้ ลองบันทึกเป็น CSV แล้วลองใหม่",
+      inFileEmpty: "ไม่พบรายการในไฟล์นี้",
+      inColType: "เข้า/ออก",
       inPasteLabel: "วางรายการจากใบส่งของ",
       inColLine: "รายการ",
       inColQty: "จำนวน",
@@ -4300,7 +4329,9 @@ table.vtable tfoot td.num { text-align: right; }
     ["inBtnText", "inBtn"], ["inTitle", "inTitle"], ["inHint", "inHint"],
     ["inKindLabel", "inKindLabel"], ["inDateLabel", "inDateLabel"],
     ["inNoteLabel", "inNoteLabel"], ["inPasteLabel", "inPasteLabel"],
-    ["inColLine", "inColLine"], ["inColQty", "inColQty"], ["inColState", "inColState"],
+    ["inColLine", "inColLine"], ["inColQty", "inColQty"],
+    ["inColType", "inColType"], ["inColState", "inColState"],
+    ["inPickText", "inPickText"], ["inTplText", "inTplText"], ["inFileHow", "inFileHow"],
     ["inOpenMissingText", "inOpenMissingText"], ["inSave", "inSaveBtn"], ["inCancel", "close"],
     ["mfAll", "movesAll"], ["mfIn", "movesIn"], ["mfRet", "movesRet"],
     ["mfOut", "movesOut"], ["mfCount", "movesRecount"], ["mfClear", "movesClear"],
@@ -5119,34 +5150,223 @@ table.vtable tfoot td.num { text-align: right; }
   function inNorm(x) { return String(x == null ? "" : x).toLowerCase()
     .replace(/[\u0000-\u002f\u003a-\u0040\u005b-\u0060\u007b-\u00bf\u2000-\u206f]/g, ""); }
 
-  /* Two shapes, both of them what the delivery sheets actually look like:
-       code, colour, size, qty
-       code, description, colour, size, qty
-     Anything else is left for the person to fix rather than guessed at. */
-  function inParse(text) {
+  /* ---- the sheet, as a file as well as pasted text ----------
+
+     The paperwork arrives as a file far more often than as text somebody can
+     select: a delivery note from the warehouse, a return list, a damage report,
+     all of them Excel. Retyping one into a box is where the rows get dropped.
+
+     So the same panel now takes a file, and every row carries its own `type` —
+     because one note from the warehouse routinely has all three on it, and
+     splitting it into three files to suit the software is exactly the step
+     where a line goes missing. A row with no type follows the choice at the top
+     of the panel, so the old way of working still works unchanged. */
+
+  const IN_TYPES = {
+    add: "add", "in": "add", stockin: "add", delivery: "add", received: "add",
+    receive: "add", "รับเข้า": "add", "รับของ": "add", "รับของเพิ่ม": "add", "เข้า": "add",
+    "return": "return", returned: "return", back: "return",
+    "คืนคลัง": "return", "คืน": "return", "ส่งคืน": "return",
+    out: "out", takenout: "out", writeoff: "out", damaged: "out", lost: "out",
+    "ตัดออก": "out", "ออก": "out", "เสียหาย": "out", "ชำรุด": "out", "หาย": "out"
+  };
+
+  function inFlat(v) {
+    return String(v == null ? "" : v).trim().toLowerCase().replace(/[\s._\-\/]/g, "");
+  }
+  function inType(v) { return IN_TYPES[inFlat(v)] || ""; }
+
+  /* The column names the template uses, plus the ones the existing pick sheets
+     already carry, in both languages. Matched on the flattened name so
+     "Colour ", "color" and "COLOR" are one thing. */
+  const IN_COLS = {
+    code:  ["code", "sku", "model", "รหัส", "รหัสสินค้า", "รุ่น"],
+    color: ["colour", "color", "สี"],
+    size:  ["size", "ไซส์", "ไซซ์", "ขนาด"],
+    qty:   ["qty", "quantity", "pcs", "pieces", "จำนวน"],
+    type:  ["type", "reason", "ชนิด", "ประเภท"],
+    note:  ["note", "remark", "หมายเหตุ"]
+  };
+
+  /* A first row is a header only if it names a code and either a size or a
+     quantity. Anything less and the file is read by position, as before — a
+     sheet whose first line is real data must not lose that line. */
+  function inHeadMap(row) {
+    const map = {};
+    (row || []).forEach(function (cell, i) {
+      const k = inFlat(cell);
+      if (!k) return;
+      Object.keys(IN_COLS).forEach(function (field) {
+        if (map[field] !== undefined) return;
+        if (IN_COLS[field].some(function (n) { return inFlat(n) === k; })) map[field] = i;
+      });
+    });
+    return (map.code !== undefined && (map.qty !== undefined || map.size !== undefined))
+      ? map : null;
+  }
+
+  function inRow(code, color, size, qty, type, note, raw) {
+    const row = { raw: raw, ok: false,
+                  code: String(code == null ? "" : code).trim(),
+                  color: String(color == null ? "" : color).trim(),
+                  size: String(size == null ? "" : size).trim(),
+                  qty: Number(String(qty == null ? "" : qty).trim()),
+                  type: inType(type),
+                  note: String(note == null ? "" : note).trim(),
+                  rec: null };
+    row.ok = !!(row.code && row.color && row.size &&
+                row.qty > 0 && Math.floor(row.qty) === row.qty);
+    if (row.ok) {
+      const want = inNorm(row.code) + "|" + inNorm(row.color) + "|" + inNorm(row.size);
+      row.rec = state.records.filter(function (r) { return keyOf(r) === want; })[0] || null;
+    }
+    return row;
+  }
+
+  /* The two shapes the pasted sheets have always had, unchanged, with one
+     addition: a trailing field that reads as a type is taken as one. A quantity
+     never reads as a type, so nothing that works today changes. */
+  function inFields(f, raw) {
+    let type = "";
+    if (f.length > 3 && inType(f[f.length - 1])) type = f.pop();
+    if (f.length === 3) return inRow(f[0], f[1], f[2], 1, type, "", raw);
+    if (f.length === 4) return inRow(f[0], f[1], f[2], f[3], type, "", raw);
+    if (f.length >= 5) return inRow(f[0], f[2], f[3], f[4], type, "", raw);
+    return inRow("", "", "", 0, "", "", raw);
+  }
+
+  function inRowsFrom(matrix) {
+    const rows = (matrix || []).filter(function (r) {
+      return r && r.some(function (c) { return String(c == null ? "" : c).trim() !== ""; });
+    });
+    if (!rows.length) return [];
+    const head = inHeadMap(rows[0]);
     const out = [];
-    String(text || "").split(/[\r\n]+/).forEach(function (raw) {
-      const line = raw.trim();
-      if (!line) return;
-      const f = line.split(/\t|,|;|\|/).map(function (x) { return x.trim(); })
-                    .filter(function (x) { return x !== ""; });
-      const row = { raw: line, ok: false, code: "", color: "", size: "", qty: 0, rec: null };
-      if (f.length === 3) {
-        row.code = f[0]; row.color = f[1]; row.size = f[2]; row.qty = 1;
-      } else if (f.length === 4) {
-        row.code = f[0]; row.color = f[1]; row.size = f[2]; row.qty = Number(f[3]);
-      } else if (f.length >= 5) {
-        row.code = f[0]; row.color = f[2]; row.size = f[3]; row.qty = Number(f[4]);
-      }
-      row.ok = !!(row.code && row.color && row.size &&
-                  row.qty > 0 && Math.floor(row.qty) === row.qty);
-      if (row.ok) {
-        const want = inNorm(row.code) + "|" + inNorm(row.color) + "|" + inNorm(row.size);
-        row.rec = state.records.filter(function (r) { return keyOf(r) === want; })[0] || null;
-      }
-      out.push(row);
+    if (head) {
+      const at = function (r, i) { return i === undefined ? "" : r[i]; };
+      rows.slice(1).forEach(function (r) {
+        out.push(inRow(at(r, head.code), at(r, head.color), at(r, head.size),
+                       head.qty === undefined ? 1 : at(r, head.qty),
+                       at(r, head.type), at(r, head.note),
+                       r.join(", ")));
+      });
+      return out;
+    }
+    rows.forEach(function (r) {
+      const f = r.map(function (c) { return String(c == null ? "" : c).trim(); })
+                 .filter(function (c) { return c !== ""; });
+      out.push(inFields(f, f.join(", ")));
     });
     return out;
+  }
+
+  /* Quote-aware, because a note with a comma in it used to split a row in two.
+     Tab, semicolon and pipe are separators too — that is what the sheets use. */
+  function inCsv(text) {
+    const s = String(text == null ? "" : text).replace(/^﻿/, "");
+    const rows = [];
+    let f = "", row = [], q = false;
+    for (let i = 0; i < s.length; i++) {
+      const c = s[i];
+      if (q) {
+        if (c === '"') { if (s[i + 1] === '"') { f += '"'; i++; } else q = false; }
+        else f += c;
+      } else if (c === '"') q = true;
+      else if (c === "," || c === "\t" || c === ";" || c === "|") { row.push(f); f = ""; }
+      else if (c === "\n") { row.push(f); rows.push(row); row = []; f = ""; }
+      else if (c !== "\r") f += c;
+    }
+    if (f !== "" || row.length) { row.push(f); rows.push(row); }
+    return rows;
+  }
+
+  function inParse(text) { return inRowsFrom(inCsv(text)); }
+
+  /* Excel is read by a library, and the library is fetched only once an Excel
+     file has actually been chosen: a booth phone on a slow connection should
+     not pay for it just to open this panel, and CSV and pasting still work if
+     it never arrives. */
+  let inLibPromise = null;
+  function inSheetLib() {
+    if (window.XLSX) return Promise.resolve(window.XLSX);
+    if (inLibPromise) return inLibPromise;
+    inLibPromise = new Promise(function (resolve, reject) {
+      const s = document.createElement("script");
+      s.src = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
+      s.onload = function () {
+        if (window.XLSX) resolve(window.XLSX); else reject(new Error("no XLSX"));
+      };
+      s.onerror = function () { inLibPromise = null; reject(new Error("offline")); };
+      document.head.appendChild(s);
+    });
+    return inLibPromise;
+  }
+
+  function inReadFile(file) {
+    const note = document.getElementById("inParseNote");
+    document.getElementById("inFileName").textContent = String(file.name || "");
+    note.textContent = t("inReading");
+    const show = function (matrix) {
+      inRows = inRowsFrom(matrix);
+      if (!inRows.length) { note.textContent = t("inFileEmpty"); return; }
+      /* The file wins over anything left in the paste box, so the table can
+         never be a mixture of the two with no way to tell which is which. */
+      document.getElementById("inPaste").value = "";
+      inRender();
+    };
+    const failed = function () { note.textContent = t("inFileBad"); };
+    const reader = new FileReader();
+    reader.onerror = failed;
+
+    if (!/\.(xlsx|xlsm|xlsb|xls)$/i.test(String(file.name || ""))) {
+      reader.onload = function () {
+        try { show(inCsv(String(reader.result || ""))); } catch (e) { failed(); }
+      };
+      reader.readAsText(file, "utf-8");
+      return;
+    }
+    inSheetLib().then(function (XLSX) {
+      reader.onload = function () {
+        try {
+          const wb = XLSX.read(new Uint8Array(reader.result), { type: "array" });
+          const ws = wb.Sheets[wb.SheetNames[0]];
+          show(XLSX.utils.sheet_to_json(ws, { header: 1, raw: false, defval: "" }));
+        } catch (e) { failed(); }
+      };
+      reader.readAsArrayBuffer(file);
+    }).catch(failed);
+  }
+
+  /* The template is written here rather than kept as a file in the repo, so it
+     cannot fall out of step with what the page reads. The BOM is what makes
+     Excel open the Thai correctly instead of as mojibake. */
+  function inTemplate() {
+    const rows = [
+      ["code", "colour", "size", "qty", "type", "note"],
+      ["BWL004", "Sand", "L", "2", "รับเข้า", "ใบส่งของ"],
+      ["P125", "Black", "XL", "1", "คืนคลัง", ""],
+      ["AC029", "Manta", "Free", "1", "ตัดออก", "ชำรุด"]
+    ];
+    const csv = rows.map(function (r) {
+      return r.map(function (c) {
+        return /[",\n]/.test(c) ? '"' + String(c).replace(/"/g, '""') + '"' : c;
+      }).join(",");
+    }).join("\r\n");
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8" }));
+    a.download = "appeal-stock-in-out.csv";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000);
+  }
+
+  function inFallback() {
+    const v = document.getElementById("inKind").value;
+    return v === "return" ? "return" : v === "out" ? "out" : "add";
+  }
+  function inTypeLabel(kind) {
+    return t(kind === "add" ? "logAdd" : kind === "return" ? "logReturn" : "logOut");
   }
 
   function inRender() {
@@ -5157,14 +5377,21 @@ table.vtable tfoot td.num { text-align: right; }
       const tr = document.createElement("tr");
       const what = document.createElement("td");
       const qty = document.createElement("td");
+      const ty = document.createElement("td");
       const state2 = document.createElement("td");
       if (!row.ok) {
         bad++;
         what.textContent = row.raw;
         qty.textContent = "";
+        ty.textContent = "";
         state2.textContent = t("inUnreadable");
         state2.className = "in-bad";
       } else {
+        /* What this row will actually do, so it can be checked before saving
+           rather than discovered in the ledger afterwards. A row with no type
+           of its own is shown in the muted colour, following the panel. */
+        ty.textContent = inTypeLabel(row.type || inFallback());
+        if (!row.type) ty.className = "in-dim";
         const rec = row.rec;
         what.textContent = (rec ? dProduct(rec.productName, rec.productTh) + " · " : row.code + " · ") +
           (rec ? dColor(rec.color, rec.colorTh) : row.color) + " · " + dSize(row.size);
@@ -5172,7 +5399,7 @@ table.vtable tfoot td.num { text-align: right; }
         if (rec) { state2.textContent = t("inKnown"); }
         else { missing++; state2.textContent = t("inMissing"); state2.className = "in-new"; }
       }
-      tr.appendChild(what); tr.appendChild(qty); tr.appendChild(state2);
+      tr.appendChild(what); tr.appendChild(qty); tr.appendChild(ty); tr.appendChild(state2);
       body.appendChild(tr);
     });
     const note = document.getElementById("inParseNote");
@@ -5191,8 +5418,12 @@ table.vtable tfoot td.num { text-align: right; }
     document.getElementById("inPaste").value = "";
     document.getElementById("inPaste").placeholder = t("inPastePlaceholder");
     document.getElementById("inResult").hidden = true;
+    document.getElementById("inParseNote").textContent = "";
+    document.getElementById("inFile").value = "";
+    document.getElementById("inFileName").textContent = "";
     document.getElementById("inKind").options[0].textContent = t("reasonAdd");
     document.getElementById("inKind").options[1].textContent = t("reasonReturn");
+    document.getElementById("inKind").options[2].textContent = t("logOut");
     inRows = [];
     inRender();
     document.getElementById("inOverlay").hidden = false;
@@ -5202,7 +5433,7 @@ table.vtable tfoot td.num { text-align: right; }
   function closeIn() { document.getElementById("inOverlay").hidden = true; }
 
   function inSave() {
-    const kind = document.getElementById("inKind").value === "return" ? "return" : "add";
+    const fallback = inFallback();
     const date = document.getElementById("inDate").value || todayISO();
     const note = document.getElementById("inNote").value.trim();
     const rows = inRows.filter(function (r) { return r.ok; });
@@ -5212,9 +5443,15 @@ table.vtable tfoot td.num { text-align: right; }
     const ts = date + "T12:00:00";
     const stamp = Date.now();
     const moves = rows.map(function (r, i) {
+      /* Each row decides for itself; the panel is only the fallback. A return
+         and a write-off both leave the booth, so both are negative — the word
+         is what tells them apart weeks later, which is the whole point of
+         carrying it per row. */
+      const reason = r.type || fallback;
       return { code: r.code, color_en: r.color, size: r.size,
-               delta: kind === "add" ? r.qty : -r.qty,
-               reason: kind, ts: ts, note: note,
+               delta: reason === "add" ? r.qty : -r.qty,
+               reason: reason, ts: ts,
+               note: [note, r.note].filter(Boolean).join(" \u00b7 "),
                clientId: "sheet-" + stamp + "-" + i };
     });
     const missing = rows.filter(function (r) { return !r.rec; })
@@ -5566,8 +5803,19 @@ table.vtable tfoot td.num { text-align: right; }
     document.getElementById("inCancel").addEventListener("click", closeIn);
     document.getElementById("inSave").addEventListener("click", inSave);
     document.getElementById("inPaste").addEventListener("input", function () {
+      document.getElementById("inFile").value = "";
+      document.getElementById("inFileName").textContent = "";
       inRows = inParse(this.value);
       inRender();
+    });
+    document.getElementById("inFile").addEventListener("change", function () {
+      if (this.files && this.files[0]) inReadFile(this.files[0]);
+    });
+    document.getElementById("inTpl").addEventListener("click", inTemplate);
+    /* Changing the fallback re-reads the table, so the "In or out" column never
+       shows something the save would not do. */
+    document.getElementById("inKind").addEventListener("change", function () {
+      if (inRows.length) inRender();
     });
     document.querySelectorAll("#movesKinds button").forEach(function (b) {
       b.addEventListener("click", function () { setMovesKind(b.getAttribute("data-kind")); });
