@@ -52,8 +52,24 @@ header{border-bottom:1px solid var(--line)}
 .mark{font-family:var(--f); font-weight:600; font-size:.66rem; letter-spacing:.15em;
   text-transform:uppercase; color:var(--coral)}
 .head h1{font-size:1.02rem; font-weight:600}
-.head select{border:1px solid var(--line); border-radius:9px; background:transparent; padding:.15rem .4rem;
-  font-weight:600; font-size:.95rem; max-width:13rem}
+.sub.br{padding-bottom:.4rem; font-size:.9rem}
+.sub.br .lbl{color:var(--soft); font-size:.78rem}
+.sub.br select{border:1px solid var(--coral); border-radius:9px; background:transparent; padding:.2rem .5rem;
+  font:inherit; font-weight:600; color:var(--ink); max-width:100%}
+.ucard{border:1px solid var(--line); border-radius:13px; padding:.8rem .85rem; margin-bottom:.7rem; display:grid; gap:.55rem}
+.ucard.off{opacity:.6}
+.ucard.new{border-style:dashed}
+.ucard .row2{display:grid; grid-template-columns:1fr 1fr; gap:.5rem}
+.ucard .f input,.ucard .f select{border:1px solid var(--line); border-radius:10px; padding:.45rem .6rem; background:transparent; width:100%; font:inherit; font-weight:300}
+.ucard .pinrow{display:flex; gap:.4rem}
+.ucard .pinrow input{font-family:var(--mono); letter-spacing:.15em}
+.ucard .acts{display:flex; gap:.5rem; align-items:center; flex-wrap:wrap}
+.ucard .acts label{display:flex; gap:.4rem; align-items:center; font-size:.86rem}
+.ucard .acts input[type=checkbox]{width:1.1rem; height:1.1rem; accent-color:var(--coral)}
+.ucard .acts .mini{margin:0 0 0 auto; background:var(--coral); color:#fff; border-color:var(--coral)}
+.ucard .msg{font-size:.8rem; color:var(--coral); min-height:1em}
+.ucard .msg.ok{color:var(--sea)}
+.sethd{font-size:.95rem; font-weight:600; margin:1.2rem 0 .6rem}
 .head .meta{margin-left:auto; text-align:right; font-size:.74rem; color:var(--soft); line-height:1.45}
 .head .meta b{display:block; color:var(--ink); font-weight:600; font-size:.82rem}
 .sub{display:flex; align-items:center; gap:.5rem; padding-bottom:.65rem; flex-wrap:wrap; font-size:.78rem}
@@ -257,10 +273,14 @@ nav button[aria-current="true"]{color:var(--coral); background:var(--coral-soft)
   <div class="wrap head">
     <div>
       <div class="mark">APPEAL</div>
-      <h1 id="brName">—</h1>
-      <select id="brSel" hidden aria-label="สาขา"></select>
+      <h1>APSMW Partners</h1>
     </div>
     <div class="meta"><b class="n" id="onhand">—</b>ชิ้นในร้าน</div>
+  </div>
+  <div class="wrap sub br">
+    <label for="brSel" class="lbl">สาขา</label>
+    <select id="brSel" hidden></select>
+    <b id="brName">—</b>
   </div>
   <div class="wrap sub">
     <span class="who" id="meName"></span>
@@ -268,6 +288,7 @@ nav button[aria-current="true"]{color:var(--coral); background:var(--coral-soft)
     <span class="pill on" id="conn">เชื่อมต่อแล้ว · Google Sheet</span>
     <span class="act">
       <button class="sbtn" type="button" id="reload" aria-label="โหลดใหม่">↻</button>
+      <button class="sbtn" type="button" id="setBtn" hidden>⚙ ตั้งค่า</button>
       <button class="sbtn" type="button" id="logout">ออก</button>
     </span>
   </div>
@@ -376,6 +397,12 @@ nav button[aria-current="true"]{color:var(--coral); background:var(--coral-soft)
     <div id="histList"></div>
   </section>
 
+  <section class="view" id="v-set" hidden>
+    <div class="vh"><h2>ตั้งค่า · ชื่อและ PIN</h2><span class="c">เจ้าของเท่านั้น</span></div>
+    <div class="notice">PIN ต้องเป็นตัวเลข 6 หลัก ไม่ซ้ำกัน · เปลี่ยนแล้วมีผลตอนเข้าใช้ครั้งถัดไป · ปิด “ใช้งาน” = รหัสนั้นเข้าไม่ได้ทันที · เปลี่ยนชื่อแล้ว รายการเก่ายังเป็นชื่อเดิม</div>
+    <div id="userList"></div>
+  </section>
+
 </main>
 
 <div class="toast" id="toast" hidden>
@@ -455,10 +482,12 @@ function apply(j) {
   const b = S.branches.find(x => x.branch === branch) || { branch };
   $("brName").textContent = b.branch;
   const sel = $("brSel");
-  if (S.branches.length > 1) {
+  // the owner always picks the branch; staff see the one their PIN belongs to
+  if (S.me.role === "owner") {
     sel.hidden = false; $("brName").hidden = true; sel.textContent = "";
     S.branches.forEach(x => { const o = el("option", null, x.branch); o.value = x.branch; o.selected = x.branch === branch; sel.appendChild(o); });
   } else { sel.hidden = true; $("brName").hidden = false; }
+  $("setBtn").hidden = S.me.role !== "owner";
   $("meName").textContent = S.me.name;
   $("meRole").textContent = S.me.role === "owner" ? "เจ้าของ" : "พนักงาน";
   $("segRecount").hidden = S.me.role !== "owner";
@@ -534,7 +563,7 @@ const money = a => a.reduce((x, l) => x + l.qty * (P[l.code] ? P[l.code].price :
 const cid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
 
 /* ---------- views ---------- */
-const views = ["sell", "stock", "recv", "week", "hist"];
+const views = ["sell", "stock", "recv", "week", "hist", "set"];
 const cur = () => views.find(v => !$("v-" + v).hidden);
 function show(v) {
   views.forEach(x => $("v-" + x).hidden = (x !== v));
@@ -542,6 +571,7 @@ function show(v) {
   if (v === "stock") drawStock();
   if (v === "week") drawWeek();
   if (v === "hist") drawHist();
+  if (v === "set") loadUsers();
   if (v === "recv") rStep(batch.length ? 3 : 1);
   if (v === "sell") sStep(bill.length ? 3 : 1);
   sync(); scrollTo(0, 0);
@@ -566,12 +596,12 @@ function tile(cd, nm, sm) {
 /* colour + size on one page; mode = sell | add | return | out */
 function matrix(host, code, arr, mode) {
   const p = P[code]; host.textContent = "";
-  p.colours.forEach(([en, th]) => {
+  p.colours.forEach(([en]) => {
     const sizes = p.sizes.filter(s => has(code, en, s));
     if (!sizes.length) return;
     const box = el("div", "cblock");
     const t = el("div", "ct");
-    t.append(el("span", "en", en), el("span", "th", th || ""), el("span", "lf", "เหลือ " + colTotal(code, en)));
+    t.append(el("span", "en", en), el("span", "lf", "เหลือ " + colTotal(code, en)));
     box.appendChild(t);
     const chips = el("div", "chips");
     sizes.forEach(s => {
@@ -592,12 +622,12 @@ function matrix(host, code, arr, mode) {
 function countGrid(host, code) {
   const p = P[code]; host.textContent = "";
   host.appendChild(el("p", "hint", "พิมพ์จำนวนที่นับได้จริง ช่องที่ไม่แก้ = ไม่เปลี่ยน"));
-  p.colours.forEach(([en, th]) => {
+  p.colours.forEach(([en]) => {
     const sizes = p.sizes.filter(s => has(code, en, s));
     if (!sizes.length) return;
     const box = el("div", "cblock");
     const t = el("div", "ct");
-    t.append(el("span", "en", en), el("span", "th", th || ""));
+    t.append(el("span", "en", en));
     box.appendChild(t);
     const chips = el("div", "chips");
     sizes.forEach(s => {
@@ -829,13 +859,13 @@ function drawStock() {
     const t = el("div", "t");
     t.append(el("span", "cd", p.code), el("span", "nm", p.name + " · " + baht(p.price) + " ฿"), el("span", "q", styleTotal(p.code) + " ชิ้น"));
     box.appendChild(t);
-    p.colours.forEach(([en, th]) => {
+    p.colours.forEach(([en]) => {
       const sizes = p.sizes.filter(s => has(p.code, en, s)); if (!sizes.length) return;
       const row = el("div", "srow");
       const cells = el("span", "cells");
       sizes.forEach(s => { const n = oh(p.code, en, s); if (n <= 0) zero++;
         cells.appendChild(el("span", "cell" + (n <= 0 ? " zero" : n <= 1 ? " low" : ""), s + " " + n)); });
-      row.append(el("span", "cl", en + (th ? " · " + th : "")), cells);
+      row.append(el("span", "cl", en), cells);
       box.appendChild(row);
     });
     w.appendChild(box);
@@ -935,6 +965,95 @@ async function undoDoc(no) {
   apply(j);
   if (lastDoc === no) lastDoc = null;
   toast("ย้อน " + no + " แล้ว");
+}
+
+/* ---------- SETTINGS (owner): names, PINs, branches ---------- */
+const UERR = {
+  "name needed": "ใส่ชื่อก่อน", "pin 6 digits": "PIN ต้องเป็นตัวเลข 6 หลัก", "pin taken": "PIN นี้มีคนใช้แล้ว",
+  "name taken": "ชื่อนี้มีแล้ว", "pick a branch": "เลือกสาขาให้พนักงาน", "last owner": "ต้องมีเจ้าของที่ใช้งานได้อย่างน้อย 1 คน",
+  "code letters": "รหัสสาขาเป็นตัวอักษรอังกฤษ 2–4 ตัว", "code taken": "รหัสสาขานี้มีแล้ว", "bad date": "วันที่ไม่ถูกต้อง"
+};
+const uerr = j => UERR[j.error] || errText(j);
+let U = null;
+$("setBtn").addEventListener("click", () => show("set"));
+async function loadUsers() {
+  const host = $("userList"); host.textContent = "";
+  host.appendChild(el("div", "empty", "กำลังโหลด…"));
+  const j = await call("users");
+  if (!j.ok) { host.textContent = ""; host.appendChild(el("div", "empty", uerr(j))); return; }
+  U = j; drawUsers();
+}
+const randPin = () => { const a = new Uint32Array(1); crypto.getRandomValues(a); return String(a[0] % 1e6).padStart(6, "0"); };
+function field(label, input) { const f = el("div", "f"); const l = el("label", null, label); f.append(l, input); return f; }
+function userCard(u) {
+  const isNew = !u.row;
+  const card = el("div", "ucard" + (isNew ? " new" : "") + (u.active === false ? " off" : ""));
+  if (isNew) card.appendChild(el("b", null, "+ เพิ่มคนใหม่"));
+  const name = el("input"); name.type = "text"; name.maxLength = 60; name.value = u.name || ""; name.placeholder = "ชื่อที่จะเซ็นในทุกรายการ";
+  const pin = el("input"); pin.type = "text"; pin.inputMode = "numeric"; pin.maxLength = 6; pin.value = u.pin || ""; pin.autocomplete = "off";
+  const rnd = el("button", "mini", "สุ่ม"); rnd.type = "button"; rnd.style.margin = "0";
+  rnd.addEventListener("click", () => { pin.value = randPin(); });
+  const pr = el("div", "pinrow"); pr.append(pin, rnd);
+  const pf = el("div", "f"); pf.append(el("label", null, "PIN 6 หลัก"), pr);
+  const role = el("select"); [["staff", "พนักงาน"], ["owner", "เจ้าของ"]].forEach(([v, t]) => { const o = el("option", null, t); o.value = v; o.selected = (u.role || "staff") === v; role.appendChild(o); });
+  const br = el("select");
+  U.branches.forEach(b => { const o = el("option", null, b.branch); o.value = b.branch; o.selected = u.branch === b.branch; br.appendChild(o); });
+  if (!u.branch && S && S.me.role === "owner") br.value = branch;
+  const syncRole = () => { br.disabled = role.value === "owner"; };
+  role.addEventListener("change", syncRole); syncRole();
+  const r1 = el("div", "row2"); r1.append(field("ชื่อ", name), pf);
+  const r2 = el("div", "row2"); r2.append(field("บทบาท", role), field("สาขา", br));
+  const act = el("label"); const ck = el("input"); ck.type = "checkbox"; ck.checked = u.active !== false; act.append(ck, "ใช้งาน");
+  const go = el("button", "mini", isNew ? "เพิ่ม" : "บันทึก"); go.type = "button";
+  const msg = el("div", "msg");
+  const acts = el("div", "acts"); acts.append(act, go);
+  card.append(r1, r2, acts, msg);
+  go.addEventListener("click", async () => {
+    msg.className = "msg"; msg.textContent = "กำลังบันทึก…"; go.disabled = true;
+    const j = await call("saveUser", { user: { row: u.row || 0, name: name.value, pin: pin.value.trim(), role: role.value, branch: br.value, active: ck.checked } });
+    go.disabled = false;
+    if (!j.ok) { msg.textContent = uerr(j); return; }
+    if (j.result.self) { PIN = j.result.pin; S.me.name = j.result.name; $("meName").textContent = j.result.name; }
+    U = j; drawUsers();
+    toast((isNew ? "เพิ่ม " : "บันทึก ") + j.result.name + " แล้ว");
+  });
+  return card;
+}
+function drawUsers() {
+  const host = $("userList"); host.textContent = "";
+  host.appendChild(el("div", "sethd", "คนที่เข้าใช้ได้"));
+  U.users.forEach(u => host.appendChild(userCard(u)));
+  host.appendChild(userCard({ row: 0, name: "", pin: randPin(), role: "staff", branch: "", active: true }));
+  host.appendChild(el("div", "sethd", "สาขา"));
+  const tw = el("div", "tw"), tb = el("table"), tr = el("tr");
+  ["สาขา", "รหัส", "เปิด"].forEach(x => tr.appendChild(el("th", null, x)));
+  const th = el("thead"); th.appendChild(tr); tb.appendChild(th);
+  const tbody = el("tbody");
+  U.branches.forEach(b => { const r = el("tr"); [b.branch, b.code, b.opened].forEach(x => r.appendChild(el("td", null, x))); tbody.appendChild(r); });
+  tb.appendChild(tbody); tw.appendChild(tb);
+  const box = el("div", "bill"); box.appendChild(tw); host.appendChild(box);
+  // add a branch
+  const card = el("div", "ucard new");
+  card.appendChild(el("b", null, "+ เพิ่มสาขาใหม่"));
+  const bn = el("input"); bn.type = "text"; bn.maxLength = 60; bn.placeholder = "เช่น ชื่อร้าน สาขา";
+  const bc = el("input"); bc.type = "text"; bc.maxLength = 4; bc.placeholder = "เช่น GG"; bc.style.textTransform = "uppercase";
+  const bd = el("input"); bd.type = "date"; bd.value = S ? S.today : "";
+  const r1 = el("div", "row2"); r1.append(field("ชื่อสาขา", bn), field("รหัส (ขึ้นต้นเลขบิล)", bc));
+  const msg = el("div", "msg");
+  const go = el("button", "mini", "เพิ่มสาขา"); go.type = "button";
+  const acts = el("div", "acts"); acts.append(go);
+  card.append(r1, field("วันที่เปิด", bd), acts, msg);
+  card.appendChild(el("p", "hint", "สาขาใหม่ยังไม่มีสินค้า · ใส่ใบนับตั้งต้นในแท็บ Stock ของชีต (หนึ่งแถวต่อ รหัส+สี+ไซส์) แล้วกด ↻"));
+  go.addEventListener("click", async () => {
+    msg.className = "msg"; msg.textContent = "กำลังบันทึก…"; go.disabled = true;
+    const j = await call("addBranch", { newBranch: { branch: bn.value, code: bc.value, opened: bd.value } });
+    go.disabled = false;
+    if (!j.ok) { msg.textContent = uerr(j); return; }
+    U = j; drawUsers();
+    const k = await call("load", { branch }); if (k.ok) { apply(k); show("set"); }
+    toast("เพิ่มสาขา " + j.result.branch + " แล้ว");
+  });
+  host.appendChild(card);
 }
 
 /* ---------- toast, dock, busy ---------- */
