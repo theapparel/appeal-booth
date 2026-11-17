@@ -399,7 +399,7 @@ nav button[aria-current="true"]{color:var(--coral); background:var(--coral-soft)
 
   <section class="view" id="v-set" hidden>
     <div class="vh"><h2>ตั้งค่า · ชื่อและ PIN</h2><span class="c">เจ้าของเท่านั้น</span></div>
-    <div class="notice">PIN ต้องเป็นตัวเลข 6 หลัก ไม่ซ้ำกัน · เปลี่ยนแล้วมีผลตอนเข้าใช้ครั้งถัดไป · ปิด “ใช้งาน” = รหัสนั้นเข้าไม่ได้ทันที · เปลี่ยนชื่อแล้ว รายการเก่ายังเป็นชื่อเดิม</div>
+    <div class="notice">PIN ต้องเป็นตัวเลข 4 หลัก ไม่ซ้ำกัน · เปลี่ยนแล้วมีผลตอนเข้าใช้ครั้งถัดไป · ปิด “ใช้งาน” = รหัสนั้นเข้าไม่ได้ทันที · เปลี่ยนชื่อแล้ว รายการเก่ายังเป็นชื่อเดิม</div>
     <div id="userList"></div>
   </section>
 
@@ -969,7 +969,7 @@ async function undoDoc(no) {
 
 /* ---------- SETTINGS (owner): names, PINs, branches ---------- */
 const UERR = {
-  "name needed": "ใส่ชื่อก่อน", "pin 6 digits": "PIN ต้องเป็นตัวเลข 6 หลัก", "pin taken": "PIN นี้มีคนใช้แล้ว",
+  "name needed": "ใส่ชื่อก่อน", "pin 4 digits": "PIN ต้องเป็นตัวเลข 4 หลัก", "pin taken": "PIN นี้มีคนใช้แล้ว",
   "name taken": "ชื่อนี้มีแล้ว", "pick a branch": "เลือกสาขาให้พนักงาน", "last owner": "ต้องมีเจ้าของที่ใช้งานได้อย่างน้อย 1 คน",
   "code letters": "รหัสสาขาเป็นตัวอักษรอังกฤษ 2–4 ตัว", "code taken": "รหัสสาขานี้มีแล้ว", "bad date": "วันที่ไม่ถูกต้อง"
 };
@@ -983,18 +983,18 @@ async function loadUsers() {
   if (!j.ok) { host.textContent = ""; host.appendChild(el("div", "empty", uerr(j))); return; }
   U = j; drawUsers();
 }
-const randPin = () => { const a = new Uint32Array(1); crypto.getRandomValues(a); return String(a[0] % 1e6).padStart(6, "0"); };
+const randPin = () => { const a = new Uint32Array(1); crypto.getRandomValues(a); return String(a[0] % 1e4).padStart(4, "0"); };
 function field(label, input) { const f = el("div", "f"); const l = el("label", null, label); f.append(l, input); return f; }
 function userCard(u) {
   const isNew = !u.row;
   const card = el("div", "ucard" + (isNew ? " new" : "") + (u.active === false ? " off" : ""));
   if (isNew) card.appendChild(el("b", null, "+ เพิ่มคนใหม่"));
   const name = el("input"); name.type = "text"; name.maxLength = 60; name.value = u.name || ""; name.placeholder = "ชื่อที่จะเซ็นในทุกรายการ";
-  const pin = el("input"); pin.type = "text"; pin.inputMode = "numeric"; pin.maxLength = 6; pin.value = u.pin || ""; pin.autocomplete = "off";
+  const pin = el("input"); pin.type = "text"; pin.inputMode = "numeric"; pin.maxLength = 4; pin.value = u.pin || ""; pin.autocomplete = "off";
   const rnd = el("button", "mini", "สุ่ม"); rnd.type = "button"; rnd.style.margin = "0";
   rnd.addEventListener("click", () => { pin.value = randPin(); });
   const pr = el("div", "pinrow"); pr.append(pin, rnd);
-  const pf = el("div", "f"); pf.append(el("label", null, "PIN 6 หลัก"), pr);
+  const pf = el("div", "f"); pf.append(el("label", null, "PIN 4 หลัก"), pr);
   const role = el("select"); [["staff", "พนักงาน"], ["owner", "เจ้าของ"]].forEach(([v, t]) => { const o = el("option", null, t); o.value = v; o.selected = (u.role || "staff") === v; role.appendChild(o); });
   const br = el("select");
   U.branches.forEach(b => { const o = el("option", null, b.branch); o.value = b.branch; o.selected = u.branch === b.branch; br.appendChild(o); });
